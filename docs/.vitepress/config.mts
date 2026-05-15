@@ -51,3 +51,8 @@ export default defineConfig({
     },
   },
 })
+themeConfig: {
+  search: {
+    provider: 'local'
+  }
+}

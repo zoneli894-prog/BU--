@@ -32,7 +32,7 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist # Vite 默认编译输出的文件夹是 dist
+          path: docs/.vitepress/dist
 
   deploy:
     needs: build_site
