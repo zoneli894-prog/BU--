@@ -23,6 +23,7 @@ export default defineConfig({
         ],
       },
       { text: '新闻动态', link: '/news/' },
+      { text: '成员文章', link: '/articles/' },
       { text: '资料库', link: '/resources/' },
     ],
     sidebar: {
@@ -50,10 +51,8 @@ export default defineConfig({
     lastUpdated: {
       text: '最后更新于',
     },
+    search: {
+      provider: 'local',
+    },
   },
 })
-themeConfig: {
-  search: {
-    provider: 'local'
-  }
-}

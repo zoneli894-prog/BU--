@@ -232,59 +232,6 @@
   margin-bottom: 0.5rem;
 }
 
-/* === Modal === */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(15, 26, 46, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s;
-}
-
-.modal-overlay.active {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.modal-content {
-  background: var(--vp-c-bg);
-  border-radius: 16px;
-  padding: 2.5rem;
-  max-width: 500px;
-  width: 90%;
-  max-height: 80vh;
-  overflow-y: auto;
-  transform: scale(0.9);
-  transition: transform 0.3s;
-}
-
-.modal-overlay.active .modal-content {
-  transform: scale(1);
-}
-
-.modal-close {
-  float: right;
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: var(--bu-text-light);
-  padding: 0;
-  line-height: 1;
-}
-
-.modal-close:hover {
-  color: var(--bu-navy);
-}
-
 /* === Resource Table === */
 .resource-table {
   width: 100%;

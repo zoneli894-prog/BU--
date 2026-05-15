@@ -7,8 +7,35 @@
         <h1 class="hero-title">Brother Union</h1>
         <p class="hero-slogan">凝聚力量，共拓边界</p>
         <div class="hero-actions">
-          <a href="/history/" class="hero-btn primary">了解更多</a>
-          <a href="/members/" class="hero-btn secondary">认识我们</a>
+          <a :href="withBase('/history/')" class="hero-btn primary">了解更多</a>
+          <a :href="withBase('/members/')" class="hero-btn secondary">认识我们</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Carousel Section -->
+    <section class="carousel-section">
+      <div class="carousel">
+        <div
+          v-for="(slide, i) in slides"
+          :key="i"
+          class="carousel-slide"
+          :class="{ active: currentSlide === i }"
+          :style="{ background: slide.bg }"
+        >
+          <div class="carousel-content">
+            <h3 class="carousel-title">{{ slide.title }}</h3>
+            <p class="carousel-subtitle">{{ slide.subtitle }}</p>
+          </div>
+        </div>
+        <div class="carousel-dots">
+          <span
+            v-for="(_, i) in slides"
+            :key="i"
+            class="carousel-dot"
+            :class="{ active: currentSlide === i }"
+            @click="goToSlide(i)"
+          ></span>
         </div>
       </div>
     </section>
@@ -39,7 +66,7 @@
       <div class="section-inner">
         <div class="section-header">
           <h2 class="section-title">最新动态</h2>
-          <a href="/news/" class="view-all">查看全部 →</a>
+          <a :href="withBase('/news/')" class="view-all">查看全部 →</a>
         </div>
         <div class="news-preview-grid">
           <a
@@ -62,21 +89,25 @@
       <div class="section-inner">
         <h2 class="section-title">快速指引</h2>
         <div class="quick-links">
-          <a href="/history/" class="quick-link">
+          <a :href="withBase('/history/')" class="quick-link">
             <span class="quick-link-icon">⏳</span>
             <span>历史沿革</span>
           </a>
-          <a href="/structure/" class="quick-link">
+          <a :href="withBase('/structure/')" class="quick-link">
             <span class="quick-link-icon">🏛</span>
             <span>组织架构</span>
           </a>
-          <a href="/members/" class="quick-link">
+          <a :href="withBase('/members/')" class="quick-link">
             <span class="quick-link-icon">👥</span>
             <span>人物介绍</span>
           </a>
-          <a href="/resources/" class="quick-link">
+          <a :href="withBase('/resources/')" class="quick-link">
             <span class="quick-link-icon">📚</span>
             <span>资料库</span>
+          </a>
+          <a :href="withBase('/articles/')" class="quick-link">
+            <span class="quick-link-icon">✍️</span>
+            <span>成员文章</span>
           </a>
         </div>
       </div>
@@ -85,29 +116,57 @@
 </template>
 
 <script setup>
+import { withBase } from 'vitepress'
+
 const latestNews = [
   {
     icon: '📢',
     tag: '活动总结',
     title: '2026年度春季团建活动圆满举办',
     date: '2026-04-20',
-    link: '/news/spring-team-building-2026',
+    link: withBase('/news/spring-team-building-2026'),
   },
   {
     icon: '🎙',
     tag: '成员专访',
     title: '对话核心层：BU 未来三年的发展方向',
     date: '2026-03-15',
-    link: '/news/core-interview-2026',
+    link: withBase('/news/core-interview-2026'),
   },
   {
     icon: '📋',
     tag: '内部通告',
     title: '2026年各部门负责人换届通知',
     date: '2026-02-01',
-    link: '/news/leadership-change-2026',
+    link: withBase('/news/leadership-change-2026'),
   },
 ]
+
+// Carousel slides
+const slides = [
+  { bg: 'linear-gradient(135deg, #1a2744 0%, #2a3d66 100%)', title: '2026 春季团建', subtitle: '同行·共进 — 42人共赴城郊拓展之旅' },
+  { bg: 'linear-gradient(135deg, #0f1a2e 0%, #1a3a5c 100%)', title: '五周年庆典', subtitle: '回望来路，展望未来' },
+  { bg: 'linear-gradient(135deg, #1a2744 0%, #3a4d76 100%)', title: '战略升级 2025', subtitle: '聚焦成员培养与社会公益' },
+  { bg: 'linear-gradient(135deg, #0f1a2e 0%, #2a4a6e 100%)', title: '青年之声论坛', subtitle: '与三所高校共话成长' },
+  { bg: 'linear-gradient(135deg, #1a2744 0%, #1a3050 100%)', title: '数字化转型', subtitle: '知识管理与协作工具全面升级' },
+]
+
+import { ref, onMounted, onUnmounted } from 'vue'
+const currentSlide = ref(0)
+let timer = null
+
+function nextSlide() {
+  currentSlide.value = (currentSlide.value + 1) % slides.length
+}
+
+function goToSlide(i) {
+  currentSlide.value = i
+  clearInterval(timer)
+  timer = setInterval(nextSlide, 5000)
+}
+
+onMounted(() => { timer = setInterval(nextSlide, 5000) })
+onUnmounted(() => { clearInterval(timer) })
 </script>
 
 <style scoped>
@@ -313,6 +372,85 @@ const latestNews = [
   background: var(--bu-ivory);
 }
 
+/* Carousel */
+.carousel-section {
+  padding: 0 2rem;
+  max-width: 1100px;
+  margin: -3rem auto 0;
+  position: relative;
+  z-index: 2;
+}
+
+.carousel {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(26, 39, 68, 0.15);
+  aspect-ratio: 21 / 9;
+}
+
+.carousel-slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.carousel-slide.active {
+  opacity: 1;
+}
+
+.carousel-content {
+  text-align: center;
+  padding: 2rem;
+}
+
+.carousel-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 0.5rem;
+  letter-spacing: 0.05em;
+}
+
+.carousel-subtitle {
+  font-size: 1.1rem;
+  color: var(--bu-gold-light);
+  margin: 0;
+  letter-spacing: 0.08em;
+}
+
+.carousel-dots {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.6rem;
+  z-index: 3;
+}
+
+.carousel-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.carousel-dot.active {
+  background: var(--bu-gold);
+  transform: scale(1.3);
+}
+
+.carousel-dot:hover {
+  background: var(--bu-gold-light);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .hero-title {
@@ -329,6 +467,22 @@ const latestNews = [
 
   .news-preview-grid {
     grid-template-columns: 1fr;
+  }
+
+  .carousel-section {
+    margin-top: -2rem;
+  }
+
+  .carousel {
+    aspect-ratio: 16 / 9;
+  }
+
+  .carousel-title {
+    font-size: 1.3rem;
+  }
+
+  .carousel-subtitle {
+    font-size: 0.9rem;
   }
 }
 </style>
