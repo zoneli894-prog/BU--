@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
+  base: '/BU--',
   title: 'Brother Union',
   description: '凝聚力量，共拓边界',
   lang: 'zh-CN',
