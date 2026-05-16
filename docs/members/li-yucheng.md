@@ -1,5 +1,5 @@
 ---
-name: 刘宇航
+name: 黎宇骋
 role: 秘书长
 quote: 效率源于秩序
 ---
@@ -9,14 +9,14 @@ import MemberDetail from '../.vitepress/theme/MemberDetail.vue'
 </script>
 
 <MemberDetail
-  name="刘宇航"
+  name="黎宇骋"
   role="秘书长"
   quote="效率源于秩序"
 />
 
 ## 个人简介
 
-刘宇航统筹秘书处日常工作，是 BU 高效运作的重要保障。他推动了内部流程优化和数字化转型，将秘书处打造成为各部门提供坚实支撑的中枢机构。
+黎宇骋统筹秘书处日常工作，是 BU 高效运作的重要保障。他推动了内部流程优化和数字化转型，将秘书处打造成为各部门提供坚实支撑的中枢机构。
 
 ## 主要贡献
 

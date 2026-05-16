@@ -1,5 +1,5 @@
 ---
-name: 黄静怡
+name: 赖哲君
 role: 财务部部长
 quote: 每一分钱都花在刀刃上
 ---
@@ -9,14 +9,14 @@ import MemberDetail from '../.vitepress/theme/MemberDetail.vue'
 </script>
 
 <MemberDetail
-  name="黄静怡"
+  name="赖哲君"
   role="财务部部长"
   quote="每一分钱都花在刀刃上"
 />
 
 ## 个人简介
 
-黄静怡负责 BU 的经费管理和预算编制，确保每一笔支出都清晰透明、合理高效。她以严谨细致的工作风格，为 BU 的财务健康保驾护航。
+赖哲君负责 BU 的经费管理和预算编制，确保每一笔支出都清晰透明、合理高效。她以严谨细致的工作风格，为 BU 的财务健康保驾护航。
 
 ## 主要贡献
 

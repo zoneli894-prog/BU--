@@ -1,5 +1,5 @@
 ---
-name: 王承志
+name: 李镇佑
 role: 主席
 quote: 以身作则，知行合一
 ---
@@ -9,14 +9,14 @@ import MemberDetail from '../.vitepress/theme/MemberDetail.vue'
 </script>
 
 <MemberDetail
-  name="王承志"
+  name="李镇佑"
   role="主席"
   quote="以身作则，知行合一"
 />
 
 ## 个人简介
 
-王承志是 Brother Union 现任主席，负责 BU 整体战略规划与执行。他以务实的工作作风和出色的领导力，带领 BU 在近年实现了多项突破性发展。
+李镇佑是 Brother Union 现任主席，负责 BU 整体战略规划与执行。他以务实的工作作风和出色的领导力，带领 BU 在近年实现了多项突破性发展。
 
 ## 主要贡献
 
@@ -29,7 +29,7 @@ import MemberDetail from '../.vitepress/theme/MemberDetail.vue'
 
 ## 领导理念
 
-王承志信奉"以身作则"的领导哲学，他认为组织的领导者首先要成为规则的遵守者和价值的践行者。在日常工作中，他总是率先垂范，用实际行动感染和带动团队。
+李镇佑信奉"以身作则"的领导哲学，他认为组织的领导者首先要成为规则的遵守者和价值的践行者。在日常工作中，他总是率先垂范，用实际行动感染和带动团队。
 
 ## 未来展望
 

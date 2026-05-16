@@ -1,5 +1,5 @@
 ---
-name: 吴晓峰
+name: 张彭博
 role: 技术部部长
 quote: 技术为人服务
 ---
@@ -9,14 +9,14 @@ import MemberDetail from '../.vitepress/theme/MemberDetail.vue'
 </script>
 
 <MemberDetail
-  name="吴晓峰"
+  name="张彭博"
   role="技术部部长"
   quote="技术为人服务"
 />
 
 ## 个人简介
 
-吴晓峰负责 BU 的技术基础设施建设，包括官网、内部系统和协作工具的搭建与维护。他以务实的技术视野，确保 BU 的技术方案始终贴合实际需求。
+张彭博负责 BU 的技术基础设施建设，包括官网、内部系统和协作工具的搭建与维护。他以务实的技术视野，确保 BU 的技术方案始终贴合实际需求。
 
 ## 主要贡献
 
