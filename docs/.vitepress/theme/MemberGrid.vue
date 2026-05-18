@@ -46,6 +46,7 @@ const groups = [
       { name: '杨仲燚', role: '活动部部长', quote: '让每个人都有参与感', link: '/members/yang-zhongyi' },
       { name: '张彭博', role: '技术部部长', quote: '技术为人服务', link: '/members/zhang-pengbo' },
       { name: '赖哲君', role: '财务部部长', quote: '每一分钱都花在刀刃上', link: '/members/lai-zhejun' },
+      { name: '徐晨洛', role: '保皇部部长', quote: '联B抗梁', link: '/members/xu_chenluo' },
     ],
   },
 ]
