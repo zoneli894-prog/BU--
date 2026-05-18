@@ -16,7 +16,7 @@ import MemberDetail from '../.vitepress/theme/MemberDetail.vue'
 
 ## 个人简介
 
-徐晨洛是前保皇党成员，现在与BU是合作关系
+徐晨洛是前保皇成员，现在与BU是合作关系
 
 ## 主要贡献
 
