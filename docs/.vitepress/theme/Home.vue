@@ -27,12 +27,6 @@
           </a>
           <a :href="withBase('/members/')" class="hero-btn secondary">认识我们</a>
         </div>
-        <div class="hero-scroll-hint">
-          <div class="scroll-mouse">
-            <div class="scroll-dot"></div>
-          </div>
-          <span>向下滚动</span>
-        </div>
       </div>
     </section>
 
@@ -360,7 +354,7 @@ onUnmounted(() => {
 /* ========== Hero ========== */
 .hero-section {
   position: relative;
-  min-height: 100vh;
+  min-height: 85vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -530,51 +524,6 @@ onUnmounted(() => {
   background: rgba(201,169,110,0.06);
 }
 
-.hero-scroll-hint {
-  position: absolute;
-  bottom: 2.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  opacity: 0;
-  animation: fadeSlideUp 0.8s ease 1.8s forwards;
-}
-
-.hero-scroll-hint span {
-  font-size: 0.7rem;
-  letter-spacing: 0.2em;
-  color: rgba(255,255,255,0.3);
-  text-transform: uppercase;
-}
-
-.scroll-mouse {
-  width: 22px;
-  height: 34px;
-  border: 1.5px solid rgba(255,255,255,0.2);
-  border-radius: 11px;
-  position: relative;
-}
-
-.scroll-dot {
-  width: 3px;
-  height: 8px;
-  background: var(--bu-gold);
-  border-radius: 2px;
-  position: absolute;
-  top: 6px;
-  left: 50%;
-  transform: translateX(-50%);
-  animation: scrollBounce 2s ease-in-out infinite;
-}
-
-@keyframes scrollBounce {
-  0%, 100% { opacity: 1; transform: translateX(-50%) translateY(0); }
-  50% { opacity: 0.3; transform: translateX(-50%) translateY(10px); }
-}
-
 @keyframes fadeSlideUp {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
@@ -584,7 +533,7 @@ onUnmounted(() => {
 .carousel-section {
   padding: 0 2rem;
   max-width: 1100px;
-  margin: -5rem auto 0;
+  margin: -4rem auto 0;
   position: relative;
   z-index: 4;
 }
@@ -711,7 +660,7 @@ onUnmounted(() => {
 .section-inner {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 5rem 2rem;
+  padding: 3.5rem 2rem;
 }
 
 .section-eyebrow {
@@ -820,7 +769,7 @@ onUnmounted(() => {
 .vision-stats {
   display: flex;
   gap: 0;
-  margin-top: 3rem;
+  margin-top: 2rem;
   border-top: 1px solid var(--bu-border);
 }
 
@@ -1040,7 +989,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   gap: 1.5rem;
-  padding: 3rem 0;
+  padding: 2rem 0;
   background: var(--bu-ivory);
 }
 
@@ -1075,10 +1024,6 @@ onUnmounted(() => {
 
   .hero-subtitle {
     font-size: 0.8rem;
-  }
-
-  .hero-scroll-hint {
-    display: none;
   }
 
   .carousel-section {

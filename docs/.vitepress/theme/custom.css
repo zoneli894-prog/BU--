@@ -60,6 +60,41 @@
   padding: 0;
 }
 
+/* === Home Page Full-Width Fix === */
+.bu-home {
+  max-width: 100% !important;
+}
+
+/* Remove VitePress page layout constraints on home */
+.VPDoc.has-sidebar .container,
+.VPDoc:not(.has-sidebar) .container {
+  max-width: 100%;
+}
+
+/* Target the home page content area */
+body:has(.bu-home) .VPContent,
+body:has(.bu-home) .VPDoc .container {
+  max-width: 100%;
+  padding: 0;
+}
+
+body:has(.bu-home) .VPDoc .content {
+  padding: 0;
+  max-width: 100%;
+}
+
+body:has(.bu-home) .VPDocAside {
+  display: none;
+}
+
+body:has(.bu-home) .VPDoc {
+  padding-top: 0;
+}
+
+body:has(.bu-home) .VPDocFooter {
+  margin-top: 0;
+}
+
 /* === Home Hero Customization === */
 .vp-doc h1 {
   color: var(--bu-navy);
