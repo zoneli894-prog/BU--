@@ -1,3 +1,6 @@
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap');
+
 :root {
   /* Brand Colors */
   --bu-navy: #1a2744;
@@ -35,7 +38,9 @@
   --vp-home-hero-name-color: transparent;
   --vp-home-hero-name-background: linear-gradient(135deg, var(--bu-navy), var(--bu-gold));
 
-  --vp-font-family-base: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', -apple-system, sans-serif;
+  --vp-font-family-base: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', -apple-system, sans-serif;
+  --vp-font-family-serif: 'Noto Serif SC', 'Georgia', serif;
+  --vp-font-family-display: 'Cormorant Garamond', 'Georgia', serif;
   --vp-font-family-mono: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
@@ -149,6 +154,7 @@
 }
 
 .timeline-title {
+  font-family: var(--vp-font-family-serif);
   font-size: 1.1rem;
   font-weight: 600;
   color: var(--bu-navy);
@@ -202,8 +208,9 @@
 }
 
 .member-name {
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-family: var(--vp-font-family-serif);
+  font-size: 1.15rem;
+  font-weight: 600;
   color: var(--bu-navy);
   margin: 0 0 0.25rem;
 }
@@ -320,7 +327,8 @@
 }
 
 .org-node-title {
-  font-weight: 700;
+  font-family: var(--vp-font-family-serif);
+  font-weight: 600;
   font-size: 1rem;
   color: var(--bu-navy);
   margin: 0 0 0.25rem;
@@ -426,8 +434,9 @@
 }
 
 .news-title {
+  font-family: var(--vp-font-family-serif);
   font-size: 1.15rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--bu-navy);
   margin: 0 0 0.4rem;
 }
