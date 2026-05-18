@@ -164,6 +164,8 @@
 <script setup>
 import { withBase } from 'vitepress'
 import { ref, onMounted, onUnmounted, computed } from 'vue'
+import slidesData from '../../data/home-slides.json'
+import newsData from '../../data/home-news.json'
 
 const heroCanvas = ref(null)
 const visionSection = ref(null)
@@ -185,34 +187,12 @@ const quickLinks = [
   { icon: '✍️', label: '成员文章', desc: '思考、感悟与复盘', href: withBase('/articles/') },
 ]
 
-const latestNews = [
-  {
-    tag: '活动总结',
-    title: '2026年度春季团建活动圆满举办',
-    date: '2026.04.20',
-    link: withBase('/news/spring-team-building-2026'),
-  },
-  {
-    tag: '成员专访',
-    title: '对话核心层：BU 未来三年的发展方向',
-    date: '2026.03.15',
-    link: withBase('/news/core-interview-2026'),
-  },
-  {
-    tag: '内部通告',
-    title: '2026年各部门负责人换届通知',
-    date: '2026.02.01',
-    link: withBase('/news/leadership-change-2026'),
-  },
-]
+const latestNews = newsData.news.map(item => ({
+  ...item,
+  link: withBase(item.link)
+}))
 
-const slides = [
-  { badge: '2026 · 春', bg: 'linear-gradient(135deg, #1a2744 0%, #2a3d66 50%, #1a2744 100%)', title: '2026 春季团建', subtitle: '同行·共进 — 42人共赴城郊拓展之旅' },
-  { badge: '里程碑', bg: 'linear-gradient(135deg, #0f1a2e 0%, #1a3a5c 50%, #0f1a2e 100%)', title: '五周年庆典', subtitle: '回望来路，展望未来' },
-  { badge: '2025', bg: 'linear-gradient(135deg, #1a2744 0%, #3a4d76 50%, #1a2744 100%)', title: '战略升级 2025', subtitle: '聚焦成员培养与社会公益' },
-  { badge: '论坛', bg: 'linear-gradient(135deg, #0f1a2e 0%, #2a4a6e 50%, #0f1a2e 100%)', title: '青年之声论坛', subtitle: '与三所高校共话成长' },
-  { badge: '数字化', bg: 'linear-gradient(135deg, #1a2744 0%, #1a3050 50%, #1a2744 100%)', title: '数字化转型', subtitle: '知识管理与协作工具全面升级' },
-]
+const slides = slidesData.slides
 
 const currentSlide = ref(0)
 const progressWidth = ref(0)
