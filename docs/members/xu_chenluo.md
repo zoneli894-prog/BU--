@@ -20,8 +20,8 @@ import MemberDetail from '../.vitepress/theme/MemberDetail.vue'
 
 ## 主要贡献
 
-- 参与BU网站建设
-
+- 参与BU的网站建设
+- 参与蒋狗驯化
 ## 技术理念
 
 > 联BU,抗梁山！
