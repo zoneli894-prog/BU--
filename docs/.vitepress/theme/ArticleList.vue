@@ -64,7 +64,7 @@ const articles = [
   },
   {
     title: '团队协作中的沟通艺术',
-    author: '陈嘉慧',
+    author: '徐晨洛',
     date: '2026-02-28',
     category: '学术思考',
     summary: '结合 BU 内部协作经验，探讨高效团队沟通的原则、方法和常见误区。',
