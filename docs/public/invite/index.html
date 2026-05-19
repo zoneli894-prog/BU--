@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BU - 设置密码</title>
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  </head>
+  <body>
+    <h2 style="text-align:center;margin-top:100px;font-family:sans-serif;color:#1a2744;">
+      正在处理邀请...
+    </h2>
+    <p id="status" style="text-align:center;font-family:sans-serif;color:#666;">
+      如果弹出窗口没有自动出现，请稍等。
+    </p>
+
+    <script>
+      if (window.netlifyIdentity) {
+        window.netlifyIdentity.init();
+
+        // 如果是设置密码的邀请链接，自动弹出窗口
+        var hash = window.location.hash;
+        if (hash.includes("invite_token") || hash.includes("recovery_token")) {
+          setTimeout(function() {
+            netlifyIdentity.open();
+          }, 500);
+        }
+
+        // 设置密码成功后跳转到管理后台
+        window.netlifyIdentity.on("login", function() {
+          document.location.href = "/admin/";
+        });
+      }
+    </script>
+  </body>
+</html>
