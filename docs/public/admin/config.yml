@@ -9,6 +9,94 @@ public_folder: "/images"
 
 # 下面是后台的文章管理模块配置
 collections:
+  - name: "timeline"
+    label: "时间轴 (Timeline)"
+    files:
+      - name: "timeline"
+        label: "时间轴数据"
+        file: "docs/data/timeline.json"
+        fields:
+          - label: "时间轴节点"
+            name: "nodes"
+            widget: "list"
+            fields:
+              - {label: "年份", name: "year", widget: "string"}
+              - {label: "标题", name: "title", widget: "string"}
+              - {label: "描述", name: "desc", widget: "text"}
+
+  - name: "orgchart"
+    label: "组织架构 (Org Chart)"
+    files:
+      - name: "orgchart"
+        label: "组织架构数据"
+        file: "docs/data/orgchart.json"
+        fields:
+          - label: "顶层"
+            name: "topLevel"
+            widget: "object"
+            fields:
+              - {label: "标题", name: "title", widget: "string"}
+              - {label: "描述", name: "desc", widget: "text"}
+          - label: "第二层"
+            name: "secondLevel"
+            widget: "object"
+            fields:
+              - {label: "标题", name: "title", widget: "string"}
+              - {label: "描述", name: "desc", widget: "text"}
+          - label: "部门"
+            name: "departments"
+            widget: "list"
+            fields:
+              - {label: "名称", name: "name", widget: "string"}
+              - {label: "描述", name: "desc", widget: "text"}
+          - label: "顾问"
+            name: "advisory"
+            widget: "object"
+            fields:
+              - {label: "标题", name: "title", widget: "string"}
+              - {label: "描述", name: "desc", widget: "text"}
+
+  - name: "home"
+    label: "首页内容 (Home)"
+    files:
+      - name: "home-slides"
+        label: "首页轮播幻灯片"
+        file: "docs/data/home-slides.json"
+        fields:
+          - label: "幻灯片"
+            name: "slides"
+            widget: "list"
+            fields:
+              - {label: "标签", name: "badge", widget: "string"}
+              - {label: "标题", name: "title", widget: "string"}
+              - {label: "副标题", name: "subtitle", widget: "string"}
+              - {label: "背景渐变", name: "bg", widget: "string"}
+      - name: "home-news"
+        label: "首页最新动态"
+        file: "docs/data/home-news.json"
+        fields:
+          - label: "新闻列表"
+            name: "news"
+            widget: "list"
+            fields:
+              - {label: "标题", name: "title", widget: "string"}
+              - {label: "日期", name: "date", widget: "string"}
+              - {label: "标签", name: "tag", widget: "string"}
+              - {label: "链接", name: "link", widget: "string"}
+
+  - name: "articles"
+    label: "成员文章 (Articles)"
+    folder: "docs/articles"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - {label: "标题", name: "title", widget: "string"}
+      - {label: "作者", name: "author", widget: "string"}
+      - {label: "日期", name: "date", widget: "datetime"}
+      - {label: "分类", name: "category", widget: "select", options: ["学术思考", "成长感悟", "活动复盘"]}
+      - {label: "摘要", name: "excerpt", widget: "text", required: false}
+      - {label: "正文", name: "body", widget: "markdown"}
+
   - name: "news"
     label: "新闻动态 (News)"
     folder: "docs/news"
@@ -20,7 +108,7 @@ collections:
       - {label: "作者", name: "author", widget: "string", required: false}
       - {label: "分类", name: "category", widget: "string", required: false}
       - {label: "正文", name: "body", widget: "markdown"}
-      
+
   - name: "members"
     label: "人物介绍 (Members)"
     folder: "docs/members"
