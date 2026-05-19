@@ -660,7 +660,7 @@ onUnmounted(() => {
 .section-inner {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 3.5rem 2rem;
+  padding: 1.5rem 2rem;
 }
 
 .section-eyebrow {
@@ -669,15 +669,15 @@ onUnmounted(() => {
   letter-spacing: 0.3em;
   color: var(--bu-gold-dark);
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .section-title {
   font-family: 'Noto Serif SC', 'Georgia', serif;
-  font-size: 2rem;
+  font-size: 1.8rem;
   font-weight: 700;
   color: var(--bu-navy);
-  margin: 0 0 2rem;
+  margin: 0 0 0.75rem;
   position: relative;
 }
 
@@ -685,7 +685,7 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  margin-bottom: 2rem;
+  margin-bottom: 0.75rem;
 }
 
 .section-header .section-title {
@@ -730,7 +730,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.5rem;
   font-size: 0.7rem;
   letter-spacing: 0.3em;
   color: var(--bu-gold-dark);
@@ -748,34 +748,34 @@ onUnmounted(() => {
 }
 
 .vision-text .section-title {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .vision-lead {
-  font-size: 1.15rem;
-  line-height: 1.9;
+  font-size: 1.05rem;
+  line-height: 1.6;
   color: var(--bu-navy);
-  margin: 0 0 1.25rem;
+  margin: 0 0 0.5rem;
   font-weight: 500;
 }
 
 .vision-text p {
-  font-size: 0.95rem;
-  line-height: 1.85;
+  font-size: 0.9rem;
+  line-height: 1.6;
   color: var(--bu-text-light);
-  margin: 0 0 1rem;
+  margin: 0 0 0.4rem;
 }
 
 .vision-stats {
   display: flex;
   gap: 0;
-  margin-top: 2rem;
+  margin-top: 1rem;
   border-top: 1px solid var(--bu-border);
 }
 
 .stat-item {
   flex: 1;
-  padding: 2rem 1.5rem;
+  padding: 1rem;
   border-right: 1px solid var(--bu-border);
   text-align: center;
 }
@@ -787,15 +787,15 @@ onUnmounted(() => {
 .stat-number {
   display: block;
   font-family: 'Cormorant Garamond', 'Georgia', serif;
-  font-size: 2.8rem;
+  font-size: 2.2rem;
   font-weight: 300;
   color: var(--bu-navy);
   line-height: 1;
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.2rem;
 }
 
 .stat-label {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--bu-text-light);
   letter-spacing: 0.1em;
 }
@@ -811,7 +811,7 @@ onUnmounted(() => {
   background: var(--vp-c-bg);
   border: 1px solid var(--bu-border);
   border-radius: 6px;
-  padding: 1.75rem;
+  padding: 1.25rem;
   text-decoration: none;
   color: inherit;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -830,7 +830,7 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .news-preview-tag {
@@ -861,7 +861,7 @@ onUnmounted(() => {
 }
 
 .news-preview-arrow {
-  margin-top: 1.25rem;
+  margin-top: 0.75rem;
   color: var(--bu-gold);
   opacity: 0;
   transform: translateX(-5px);
@@ -899,7 +899,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 1.25rem;
-  padding: 1.25rem 1.5rem;
+  padding: 1rem 1.5rem;
   background: var(--vp-c-bg);
   border: 1px solid transparent;
   border-radius: 0;
@@ -989,7 +989,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   gap: 1.5rem;
-  padding: 2rem 0;
+  padding: 1rem 0;
   background: var(--bu-ivory);
 }
 
@@ -1044,7 +1044,7 @@ onUnmounted(() => {
   }
 
   .section-inner {
-    padding: 3.5rem 1.25rem;
+    padding: 1.5rem 1.25rem;
   }
 
   .section-title {
