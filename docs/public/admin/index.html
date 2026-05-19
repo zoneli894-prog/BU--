@@ -5,18 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BU 内容管理后台</title>
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <style>
+      /* 增加一个手动的备用登录按钮 */
+      #custom-login {
+        position: fixed; top: 20px; right: 20px; z-index: 9999;
+        padding: 10px 20px; background: #c9a96e; color: #1a2744;
+        border: none; border-radius: 4px; font-weight: bold; cursor: pointer;
+      }
+    </style>
   </head>
   <body>
+    <button id="custom-login" onclick="netlifyIdentity.open()">强制登录 / 设置密码</button>
+    
     <div id="nc-root"></div>
     
     <script>
+      // 1. 提取网址，看看是不是带着邀请码来的
+      var hash = window.location.hash;
+      var isSettingPassword = hash.includes("invite_token") || hash.includes("recovery_token");
+
+      // 2. 指路：告诉网页 Netlify 的大本营在哪里
       if (window.netlifyIdentity) {
         window.netlifyIdentity.init({
           APIUrl: "https://curious-brigadeiros-4f1d1a.netlify.app/.netlify/identity"
         });
       }
-    </script>
 
-    <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+      // 3. 核心分流逻辑（门卫）
+      if (isSettingPassword) {
+        // 如果是来设置密码的，绝对不要加载 CMS，防止报错卡死！
+        document.body.innerHTML += '<h2 style="text-align:center;margin-top:100px;color:#1a2744;">请在弹出的窗口中设置您的密码。<br>如果没有弹出，请点击右上角的“强制登录”按钮。</h2>';
+        // 强制弹出密码设置窗口
+        setTimeout(() => netlifyIdentity.open(), 500); 
+      } else {
+        // 如果没有邀请码（平时正常登录），正常放行 CMS
+        var script = document.createElement('script');
+        script.src = "https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js";
+        document.body.appendChild(script);
+      }
+
+      // 4. 登录成功后，自动洗掉邀请码并刷新页面，正式进入后台
+      if (window.netlifyIdentity) {
+        window.netlifyIdentity.on("login", () => {
+          document.location.href = window.location.pathname; // 智能刷新到正确的后台路径
+        });
+      }
+    </script>
   </body>
 </html>
