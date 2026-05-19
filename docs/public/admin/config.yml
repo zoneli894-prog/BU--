@@ -1,0 +1,35 @@
+backend:
+  name: git-gateway
+  branch: main # 如果你的默认分支叫 master，请改成 master
+  # 👇 修复跨域报错的第二处关键配置 👇
+  site_domain: curious-brigadeiros-4f1d1a.netlify.app
+
+media_folder: "docs/public/images"
+public_folder: "/images"
+
+# 下面是后台的文章管理模块配置
+collections:
+  - name: "news"
+    label: "新闻动态 (News)"
+    folder: "docs/news"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    fields:
+      - {label: "标题", name: "title", widget: "string"}
+      - {label: "日期", name: "date", widget: "datetime"}
+      - {label: "作者", name: "author", widget: "string", required: false}
+      - {label: "分类", name: "category", widget: "string", required: false}
+      - {label: "正文", name: "body", widget: "markdown"}
+      
+  - name: "members"
+    label: "人物介绍 (Members)"
+    folder: "docs/members"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - {label: "姓名", name: "name", widget: "string"}
+      - {label: "职位", name: "role", widget: "string"}
+      - {label: "任期", name: "term", widget: "string"}
+      - {label: "头像", name: "avatar", widget: "image", required: false}
+      - {label: "座右铭", name: "motto", widget: "string", required: false}
+      - {label: "介绍正文", name: "body", widget: "markdown"}

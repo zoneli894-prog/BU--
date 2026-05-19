@@ -1,26 +1,21 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BU 内容管理后台</title>
-  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
-  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-</head>
-<body>
-  <script>
-    if (window.netlifyIdentity) {
-      window.netlifyIdentity.on("init", user => {
-        if (!user) {
-          window.netlifyIdentity.on("login", () => {
-            document.location.href = "/BU--/admin/";
-          });
-        }
-      });
-    }
-  </script>
-  <script>
-    CMS.init()
-  </script>
-</body>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BU 内容管理后台</title>
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  </head>
+  <body>
+    <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+    
+    <script>
+      if (window.netlifyIdentity) {
+        window.netlifyIdentity.init({
+          // 这里的网址已经替换成了你的 Netlify 专属后台地址
+          APIUrl: "https://curious-brigadeiros-4f1d1a.netlify.app/.netlify/identity"
+        });
+      }
+    </script>
+  </body>
 </html>
