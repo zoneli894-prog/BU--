@@ -136,7 +136,14 @@
         <span class="section-eyebrow">EXPLORE</span>
         <h2 class="section-title">快速指引</h2>
         <div class="quick-links">
-          <a v-for="link in quickLinks" :key="link.href" :href="link.href" class="quick-link">
+          <a
+            v-for="link in quickLinks"
+            :key="link.href"
+            :href="link.href"
+            class="quick-link"
+            :target="link.newTab ? '_blank' : undefined"
+            :rel="link.newTab ? 'noopener noreferrer' : undefined"
+          >
             <div class="quick-link-icon">
               <span>{{ link.icon }}</span>
             </div>
@@ -185,6 +192,8 @@ const quickLinks = [
   { icon: '👥', label: '人物介绍', desc: '认识每一位成员', href: withBase('/members/') },
   { icon: '📚', label: '资料库', desc: '文档与资源下载', href: withBase('/resources/') },
   { icon: '✍️', label: '成员文章', desc: '思考、感悟与复盘', href: withBase('/articles/') },
+  // 2048 是独立页面、无站内导航，故新标签页打开，避免访客无法返回本站
+  { icon: '🎮', label: '2048 小游戏', desc: '合并 BU 成员卡片', href: withBase('/2048/'), newTab: true },
 ]
 
 const latestNews = newsData.news.map(item => ({
