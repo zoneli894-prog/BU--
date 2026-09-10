@@ -1,5 +1,5 @@
 <template>
-  <div class="bu-home">
+  <div class="bu-home" :class="{ 'reveal-armed': revealArmed }">
     <!-- Hero Section -->
     <section class="hero-section">
       <div class="hero-bg">
@@ -41,6 +41,7 @@
         >
           <div class="carousel-slide-bg" :style="{ background: slide.bg }"></div>
           <div class="carousel-slide-pattern"></div>
+          <div class="carousel-sheen"></div>
           <div class="carousel-content">
             <span class="carousel-badge">{{ slide.badge }}</span>
             <h3 class="carousel-title">{{ slide.title }}</h3>
@@ -68,28 +69,33 @@
     <!-- Vision Section -->
     <section class="vision-section" ref="visionSection">
       <div class="section-inner vision-layout">
-        <div class="vision-label">
+        <div class="vision-label reveal-item" :style="{ '--i': 0 }">
           <span class="vision-label-line"></span>
           <span>ABOUT US</span>
         </div>
         <div class="vision-text">
-          <h2 class="section-title">组织愿景</h2>
-          <p class="vision-lead">
+          <h2 class="section-title reveal-item" :style="{ '--i': 1 }">组织愿景</h2>
+          <p class="vision-lead reveal-item" :style="{ '--i': 2 }">
             Brother Union（BU）是一个非商业性质的团体，致力于在共同的价值观和信念基础上，
             凝聚一群志同道合的伙伴，共同探索个人成长与团队协作的无限可能。
           </p>
-          <p>
+          <p class="reveal-item" :style="{ '--i': 3 }">
             我们相信，真正的力量来自团结与信任。BU 通过建立开放、包容的交流平台，
             鼓励每位成员发挥所长，在互助中实现自我价值，同时为集体的共同目标贡献力量。
           </p>
-          <p>
+          <p class="reveal-item" :style="{ '--i': 4 }">
             无论时代如何变迁，BU 始终坚守初心：以兄弟般的情谊为纽带，
             以专业与热忱为驱动，在各自的领域中发光发热，共同书写属于我们的篇章。
           </p>
         </div>
         <div class="vision-stats">
-          <div class="stat-item" v-for="stat in stats" :key="stat.label">
-            <span class="stat-number">{{ stat.value }}</span>
+          <div
+            class="stat-item reveal-item"
+            v-for="(stat, i) in stats"
+            :key="stat.label"
+            :style="{ '--i': 5 + i }"
+          >
+            <span class="stat-number">{{ statDisplay[i] }}</span>
             <span class="stat-label">{{ stat.label }}</span>
           </div>
         </div>
@@ -99,7 +105,7 @@
     <!-- Latest News -->
     <section class="latest-section" ref="newsSection">
       <div class="section-inner">
-        <div class="section-header">
+        <div class="section-header reveal-item" :style="{ '--i': 0 }">
           <div>
             <span class="section-eyebrow">LATEST NEWS</span>
             <h2 class="section-title">最新动态</h2>
@@ -114,8 +120,8 @@
             v-for="(item, i) in latestNews"
             :key="item.link"
             :href="item.link"
-            class="news-preview-card"
-            :style="{animationDelay: (i * 0.12) + 's'}"
+            class="news-preview-card reveal-item"
+            :style="{ '--i': 1 + i }"
           >
             <div class="news-preview-top">
               <span class="news-preview-tag">{{ item.tag }}</span>
@@ -133,14 +139,15 @@
     <!-- Quick Links -->
     <section class="links-section" ref="linksSection">
       <div class="section-inner">
-        <span class="section-eyebrow">EXPLORE</span>
-        <h2 class="section-title">快速指引</h2>
+        <span class="section-eyebrow reveal-item" :style="{ '--i': 0 }">EXPLORE</span>
+        <h2 class="section-title reveal-item" :style="{ '--i': 1 }">快速指引</h2>
         <div class="quick-links">
           <a
-            v-for="link in quickLinks"
+            v-for="(link, i) in quickLinks"
             :key="link.href"
             :href="link.href"
-            class="quick-link"
+            class="quick-link reveal-item"
+            :style="{ '--i': 2 + i }"
             :target="link.newTab ? '_blank' : undefined"
             :rel="link.newTab ? 'noopener noreferrer' : undefined"
           >
@@ -170,7 +177,7 @@
 
 <script setup>
 import { withBase } from 'vitepress'
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import slidesData from '../../data/home-slides.json'
 import newsData from '../../data/home-news.json'
 
@@ -179,12 +186,19 @@ const visionSection = ref(null)
 const newsSection = ref(null)
 const linksSection = ref(null)
 
+// 入场动画的「上膛」开关。只有 JS 跑起来才会置为 true 并隐藏待入场元素，
+// 这样脚本加载失败时页面只是少了动画，不会变成一片空白。
+const revealArmed = ref(false)
+
 const stats = [
   { value: '8', label: '年历程' },
   { value: '42', label: '位成员' },
   { value: '5', label: '大部门' },
   { value: '100+', label: '场活动' },
 ]
+
+// 滚到组织愿景时才从 0 递增上去，初始即为终值以免无 JS 时显示成 0
+const statDisplay = ref(stats.map(s => s.value))
 
 const quickLinks = [
   { icon: '⏳', label: '历史沿革', desc: '八年成长之路', href: withBase('/history/') },
@@ -233,91 +247,202 @@ function goToSlide(i) {
   startProgress()
 }
 
-// Hero canvas particle system
+// ---------- Hero 粒子 ----------
+// 三层景深：远的更小更暗更慢，近的更大更亮更快，再叠上鼠标视差拉开空间感。
+// 光点用预渲染的辉光贴图 drawImage 绘制，比逐个 arc + shadowBlur 便宜得多。
 let animFrame = null
+let disposeCanvas = null
+
+function makeGlowSprite(rgb) {
+  const size = 64
+  const c = document.createElement('canvas')
+  c.width = c.height = size
+  const g = c.getContext('2d')
+  const r = size / 2
+  const grad = g.createRadialGradient(r, r, 0, r, r, r)
+  const [cr, cg, cb] = rgb
+  grad.addColorStop(0, `rgba(${cr}, ${cg}, ${cb}, 1)`)
+  grad.addColorStop(0.22, `rgba(${cr}, ${cg}, ${cb}, 0.42)`)
+  grad.addColorStop(0.55, `rgba(${cr}, ${cg}, ${cb}, 0.09)`)
+  grad.addColorStop(1, `rgba(${cr}, ${cg}, ${cb}, 0)`)
+  g.fillStyle = grad
+  g.fillRect(0, 0, size, size)
+  return c
+}
+
 function initCanvas() {
   const canvas = heroCanvas.value
   if (!canvas) return
   const ctx = canvas.getContext('2d')
-  let w, h, particles = []
+  if (!ctx) return
+
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const finePointer = window.matchMedia('(pointer: fine)').matches
+
+  // 只能在浏览器里创建，SSR 阶段没有 document
+  const sprites = [
+    makeGlowSprite([150, 178, 220]), // 远景偏冷
+    makeGlowSprite([196, 182, 158]), // 中景过渡
+    makeGlowSprite([201, 169, 110]), // 近景香槟金
+  ]
+
+  let w = 0
+  let h = 0
+  let particles = []
+  let time = 0
+  // tx/ty 是鼠标目标值，x/y 逐帧逼近，避免粒子跟着指针生硬抖动
+  const pointer = { x: 0, y: 0, tx: 0, ty: 0 }
 
   function resize() {
-    w = canvas.width = canvas.offsetWidth * (window.devicePixelRatio || 1)
-    h = canvas.height = canvas.offsetHeight * (window.devicePixelRatio || 1)
-    ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1)
+    const dpr = Math.min(window.devicePixelRatio || 1, 2)
+    w = canvas.offsetWidth
+    h = canvas.offsetHeight
+    canvas.width = Math.round(w * dpr)
+    canvas.height = Math.round(h * dpr)
+    // 用 setTransform 而不用 scale：反复 resize 时缩放不会层层累加
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
   }
 
   function createParticles() {
+    const count = Math.min(70, Math.max(22, Math.floor((w * h) / 22000)))
     particles = []
-    const count = Math.min(60, Math.floor((w * h) / 25000))
     for (let i = 0; i < count; i++) {
+      const z = Math.random() // 0 = 最远，1 = 最近
       particles.push({
-        x: Math.random() * canvas.offsetWidth,
-        y: Math.random() * canvas.offsetHeight,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
-        size: Math.random() * 2 + 1,
-        opacity: Math.random() * 0.4 + 0.1,
+        x: Math.random() * w,
+        y: Math.random() * h,
+        z,
+        vx: (Math.random() - 0.5) * (0.06 + z * 0.3),
+        vy: (Math.random() - 0.5) * (0.06 + z * 0.3) - z * 0.05,
+        phase: Math.random() * Math.PI * 2,
+        twinkle: 0.5 + Math.random() * 1.1,
       })
     }
   }
 
-  function draw() {
-    ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight)
+  function render() {
+    ctx.clearRect(0, 0, w, h)
+    pointer.x += (pointer.tx - pointer.x) * 0.05
+    pointer.y += (pointer.ty - pointer.y) * 0.05
 
-    // Draw connections
-    for (let i = 0; i < particles.length; i++) {
-      for (let j = i + 1; j < particles.length; j++) {
-        const dx = particles[i].x - particles[j].x
-        const dy = particles[i].y - particles[j].y
-        const dist = Math.sqrt(dx * dx + dy * dy)
-        if (dist < 150) {
-          ctx.beginPath()
-          ctx.moveTo(particles[i].x, particles[i].y)
-          ctx.lineTo(particles[j].x, particles[j].y)
-          ctx.strokeStyle = `rgba(201, 169, 110, ${0.06 * (1 - dist / 150)})`
-          ctx.lineWidth = 0.5
-          ctx.stroke()
-        }
-      }
-    }
-
-    // Draw particles
     for (const p of particles) {
-      ctx.beginPath()
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
-      ctx.fillStyle = `rgba(201, 169, 110, ${p.opacity})`
-      ctx.fill()
-
       p.x += p.vx
       p.y += p.vy
 
-      if (p.x < 0 || p.x > canvas.offsetWidth) p.vx *= -1
-      if (p.y < 0 || p.y > canvas.offsetHeight) p.vy *= -1
-    }
+      // 越界后从另一侧回绕，比反弹更不容易被看出规律
+      if (p.x < -60) p.x = w + 60
+      else if (p.x > w + 60) p.x = -60
+      if (p.y < -60) p.y = h + 60
+      else if (p.y > h + 60) p.y = -60
 
-    animFrame = requestAnimationFrame(draw)
+      const size = 10 + p.z * 34
+      const alpha = (0.08 + p.z * 0.42) * (0.6 + 0.4 * Math.sin(time * p.twinkle + p.phase))
+      const x = p.x - pointer.x * (8 + p.z * 34)
+      const y = p.y - pointer.y * (6 + p.z * 22)
+      const sprite = sprites[p.z < 0.45 ? 0 : p.z < 0.8 ? 1 : 2]
+
+      ctx.globalAlpha = alpha > 0 ? alpha : 0
+      ctx.drawImage(sprite, x - size / 2, y - size / 2, size, size)
+    }
+    ctx.globalAlpha = 1
+  }
+
+  function loop(now) {
+    time = now / 1000
+    render()
+    animFrame = requestAnimationFrame(loop)
+  }
+
+  function onPointerMove(e) {
+    pointer.tx = (e.clientX / window.innerWidth) * 2 - 1
+    pointer.ty = (e.clientY / window.innerHeight) * 2 - 1
+  }
+
+  let resizeRaf = null
+  function onResize() {
+    if (resizeRaf) cancelAnimationFrame(resizeRaf)
+    resizeRaf = requestAnimationFrame(() => {
+      resizeRaf = null
+      resize()
+      createParticles()
+      if (reduced) render()
+    })
+  }
+
+  // 切到后台标签页时停掉循环，别白烧电
+  function onVisibilityChange() {
+    if (reduced) return
+    if (document.hidden) {
+      if (animFrame) {
+        cancelAnimationFrame(animFrame)
+        animFrame = null
+      }
+    } else if (!animFrame) {
+      animFrame = requestAnimationFrame(loop)
+    }
   }
 
   resize()
   createParticles()
-  draw()
-  window.addEventListener('resize', () => { resize(); createParticles() })
+  window.addEventListener('resize', onResize)
+
+  if (reduced) {
+    // 尊重「减少动态效果」：只画一帧静态星空，不跑动画循环
+    render()
+  } else {
+    animFrame = requestAnimationFrame(loop)
+    if (finePointer) window.addEventListener('pointermove', onPointerMove, { passive: true })
+    document.addEventListener('visibilitychange', onVisibilityChange)
+  }
+
+  // 卸载时统一摘掉监听，否则 HMR / 路由切换后会残留
+  disposeCanvas = () => {
+    window.removeEventListener('resize', onResize)
+    window.removeEventListener('pointermove', onPointerMove)
+    document.removeEventListener('visibilitychange', onVisibilityChange)
+    if (resizeRaf) cancelAnimationFrame(resizeRaf)
+  }
 }
 
-// Scroll reveal
-function initScrollReveal() {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('revealed')
-        observer.unobserve(entry.target)
-      }
+// ---------- 滚动入场 ----------
+let revealObserver = null
+let countFrame = null
+
+// 让统计数字从 0 走到目标值，保留 '100+' 这类后缀
+function runCountUp() {
+  const DURATION = 1500
+  const start = performance.now()
+  function step(now) {
+    const t = Math.min(1, (now - start) / DURATION)
+    const eased = 1 - Math.pow(1 - t, 3) // easeOutCubic
+    statDisplay.value = stats.map(s => {
+      const m = /^(\d+)(.*)$/.exec(s.value)
+      return m ? Math.round(Number(m[1]) * eased) + m[2] : s.value
     })
-  }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' })
+    if (t < 1) countFrame = requestAnimationFrame(step)
+  }
+  countFrame = requestAnimationFrame(step)
+}
+
+function initScrollReveal() {
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (reduced) return // 不做入场动画，内容保持直接可见
+
+  // 先「上膛」再开始观察，此时首帧尚未绘制，不会有内容闪现再消失
+  revealArmed.value = true
+  statDisplay.value = stats.map(() => '0')
+
+  revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return
+      entry.target.classList.add('revealed')
+      revealObserver.unobserve(entry.target)
+      if (entry.target === visionSection.value) runCountUp()
+    })
+  }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' })
 
   const sections = [visionSection.value, newsSection.value, linksSection.value]
-  sections.forEach(el => { if (el) observer.observe(el) })
+  sections.forEach(el => { if (el) revealObserver.observe(el) })
 }
 
 onMounted(() => {
@@ -331,6 +456,9 @@ onUnmounted(() => {
   clearInterval(timer)
   clearInterval(progressTimer)
   if (animFrame) cancelAnimationFrame(animFrame)
+  if (countFrame) cancelAnimationFrame(countFrame)
+  if (revealObserver) revealObserver.disconnect()
+  if (disposeCanvas) disposeCanvas()
 })
 </script>
 
@@ -355,6 +483,54 @@ onUnmounted(() => {
   inset: 0;
   background: linear-gradient(160deg, #0a1120 0%, #1a2744 35%, #1e3050 65%, #0f1a2e 100%);
   z-index: 0;
+}
+
+/* 两团缓慢游移的极光，给纯渐变底色一点呼吸感。
+   用 radial-gradient 而非 blur 滤镜，省一层昂贵的模糊合成。 */
+.hero-bg::before,
+.hero-bg::after {
+  content: '';
+  position: absolute;
+  width: 62vw;
+  height: 62vw;
+  max-width: 880px;
+  max-height: 880px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.hero-bg::before {
+  top: -20%;
+  left: -12%;
+  background: radial-gradient(
+    circle,
+    rgba(201, 169, 110, 0.2) 0%,
+    rgba(201, 169, 110, 0.06) 42%,
+    transparent 70%
+  );
+  animation: auroraDriftA 26s ease-in-out infinite alternate;
+}
+
+.hero-bg::after {
+  right: -14%;
+  bottom: -24%;
+  background: radial-gradient(
+    circle,
+    rgba(84, 132, 204, 0.26) 0%,
+    rgba(84, 132, 204, 0.07) 45%,
+    transparent 72%
+  );
+  animation: auroraDriftB 34s ease-in-out infinite alternate;
+}
+
+@keyframes auroraDriftA {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(12vw, 9vh, 0) scale(1.22); }
+}
+
+@keyframes auroraDriftB {
+  from { transform: translate3d(0, 0, 0) scale(1.1); }
+  to { transform: translate3d(-11vw, -7vh, 0) scale(0.94); }
 }
 
 .hero-canvas {
@@ -431,8 +607,10 @@ onUnmounted(() => {
   animation: charReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* 必须 inline-block，否则 width 对行内元素无效，"Brother" 和 "Union" 会粘在一起 */
 .hero-title-space {
-  width: 0.4em;
+  display: inline-block;
+  width: 0.35em;
 }
 
 @keyframes charReveal {
@@ -470,13 +648,21 @@ onUnmounted(() => {
 }
 
 .hero-btn {
+  position: relative;
+  overflow: hidden;
   padding: 0.85rem 2.2rem;
   border-radius: 4px;
   font-size: 0.95rem;
   font-weight: 600;
   text-decoration: none;
-  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   letter-spacing: 0.05em;
+  /* 逐项声明代替 transition: all，避免无意中给布局属性加过渡 */
+  transition:
+    background-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .hero-btn.primary {
@@ -485,6 +671,26 @@ onUnmounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+/* 悬停时一道高光扫过，比单纯变色更有质感 */
+.hero-btn.primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.5) 50%,
+    transparent 62%
+  );
+  transform: translateX(-110%);
+  transition: transform 0.7s ease;
+  pointer-events: none;
+}
+
+.hero-btn.primary:hover::after {
+  transform: translateX(110%);
 }
 
 .hero-btn.primary:hover {
@@ -551,17 +757,48 @@ onUnmounted(() => {
   opacity: 1;
 }
 
-.carousel-slide-bg {
-  position: absolute;
-  inset: 0;
-}
-
+/* 缓慢推近的 Ken Burns 效果，让静止的渐变背景也有呼吸 */
+.carousel-slide-bg,
 .carousel-slide-pattern {
   position: absolute;
   inset: 0;
+  transform: scale(1);
+  transition: transform 8s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.carousel-slide.active .carousel-slide-bg,
+.carousel-slide.active .carousel-slide-pattern {
+  transform: scale(1.12);
+}
+
+.carousel-slide-pattern {
   background-image:
     radial-gradient(circle at 20% 80%, rgba(201,169,110,0.08) 0%, transparent 50%),
     radial-gradient(circle at 80% 20%, rgba(201,169,110,0.05) 0%, transparent 40%);
+}
+
+/* 每次切到这一张时扫过一道金光 */
+.carousel-sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    rgba(201, 169, 110, 0.16) 47%,
+    rgba(255, 255, 255, 0.07) 52%,
+    transparent 66%
+  );
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+
+.carousel-slide.active .carousel-sheen {
+  animation: sheenSweep 1.6s cubic-bezier(0.4, 0, 0.2, 1) 0.2s;
+}
+
+@keyframes sheenSweep {
+  from { transform: translateX(-120%); }
+  to { transform: translateX(120%); }
 }
 
 .carousel-content {
@@ -599,6 +836,30 @@ onUnmounted(() => {
   letter-spacing: 0.1em;
 }
 
+/* 徽标 → 标题 → 副标题依次浮起。
+   用 backwards 填充而非 forwards：动画结束后不残留 transform，
+   元素回到自身样式，不会把别处定义的位移锁死。 */
+.carousel-slide.active .carousel-badge,
+.carousel-slide.active .carousel-title,
+.carousel-slide.active .carousel-subtitle {
+  animation: carouselIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+.carousel-slide.active .carousel-badge { animation-delay: 0.2s; }
+.carousel-slide.active .carousel-title { animation-delay: 0.32s; }
+.carousel-slide.active .carousel-subtitle { animation-delay: 0.44s; }
+
+@keyframes carouselIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .carousel-controls {
   position: absolute;
   bottom: 0;
@@ -621,7 +882,9 @@ onUnmounted(() => {
   border-radius: 2px;
   background: rgba(255,255,255,0.2);
   cursor: pointer;
-  transition: all 0.4s ease;
+  transition:
+    background-color 0.4s ease,
+    width 0.4s ease;
   padding: 0;
 }
 
@@ -689,30 +952,52 @@ onUnmounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  transition: all 0.3s;
   letter-spacing: 0.03em;
+  transition: color 0.3s ease;
+}
+
+.view-all svg {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .view-all:hover {
   color: var(--bu-navy);
-  gap: 0.5rem;
+}
+
+/* 改位移箭头而不改 gap，避免 hover 时触发重排 */
+.view-all:hover svg {
+  transform: translateX(3px);
+}
+
+/* ========== Scroll Reveal ========== */
+/* .revealed 由 IntersectionObserver 加在 <section> 上，子元素靠它触发动画。
+   隐藏态只在 .reveal-armed（JS 就绪）下生效，脚本失效时内容照常可见；
+   显示态显式写 opacity: 1，否则动画播完后元素会落回隐藏规则再次消失。 */
+.bu-home.reveal-armed .reveal-item {
+  opacity: 0;
+}
+
+.bu-home.reveal-armed .revealed .reveal-item {
+  opacity: 1;
+  animation: revealUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+
+@keyframes revealUp {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ========== Vision ========== */
 .vision-section {
   background: var(--bu-ivory);
   overflow: hidden;
-}
-
-.vision-layout {
-  opacity: 0;
-  transform: translateY(40px);
-  transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.vision-layout.revealed {
-  opacity: 1;
-  transform: translateY(0);
 }
 
 .vision-label {
@@ -803,10 +1088,32 @@ onUnmounted(() => {
   padding: 1.25rem;
   text-decoration: none;
   color: inherit;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   display: flex;
   flex-direction: column;
+  transition:
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 悬停时顶部划出一道金线 */
+.news-preview-card::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  height: 2px;
+  border-radius: 6px 6px 0 0;
+  background: linear-gradient(90deg, var(--bu-gold), var(--bu-gold-light), var(--bu-gold));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.news-preview-card:hover::before {
+  transform: scaleX(1);
 }
 
 .news-preview-card:hover {
@@ -854,7 +1161,9 @@ onUnmounted(() => {
   color: var(--bu-gold);
   opacity: 0;
   transform: translateX(-5px);
-  transition: all 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .news-preview-card:hover .news-preview-arrow {
@@ -865,17 +1174,6 @@ onUnmounted(() => {
 /* ========== Quick Links ========== */
 .links-section {
   background: var(--bu-ivory);
-}
-
-.links-section .section-inner {
-  opacity: 0;
-  transform: translateY(40px);
-  transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.links-section .section-inner.revealed {
-  opacity: 1;
-  transform: translateY(0);
 }
 
 .quick-links {
@@ -894,7 +1192,9 @@ onUnmounted(() => {
   border-radius: 0;
   text-decoration: none;
   color: var(--bu-navy);
-  transition: all 0.3s ease;
+  transition:
+    background-color 0.35s ease,
+    border-color 0.35s ease;
 }
 
 .quick-link:first-child {
@@ -905,10 +1205,15 @@ onUnmounted(() => {
   border-radius: 0 0 6px 6px;
 }
 
+/* 用 transform 位移内部内容，而不是给整行加 padding-left：
+   后者每帧都在触发布局重排，且行会整体错位露出底色 */
 .quick-link:hover {
   background: var(--bu-navy);
   border-color: var(--bu-navy);
-  padding-left: 2rem;
+}
+
+.quick-link:hover .quick-link-text {
+  transform: translateX(6px);
 }
 
 .quick-link:hover .quick-link-label {
@@ -938,15 +1243,19 @@ onUnmounted(() => {
   background: var(--bu-ivory-dark);
   font-size: 1.2rem;
   flex-shrink: 0;
-  transition: background 0.3s;
+  transition:
+    background-color 0.35s ease,
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .quick-link:hover .quick-link-icon {
   background: rgba(201,169,110,0.15);
+  transform: scale(1.08);
 }
 
 .quick-link-text {
   flex: 1;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .quick-link-label {
@@ -968,7 +1277,9 @@ onUnmounted(() => {
   color: var(--bu-gold);
   opacity: 0;
   transform: translateX(-8px);
-  transition: all 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   flex-shrink: 0;
 }
 
@@ -994,6 +1305,56 @@ onUnmounted(() => {
   font-weight: 300;
   color: var(--bu-gold-dark);
   letter-spacing: 0.3em;
+}
+
+/* ========== Reduced Motion ========== */
+/* 系统里关掉动效的用户一律不给动画，只保留静态呈现。
+   JS 侧已跳过「上膛」，这里再兜一层，覆盖纯 CSS 的那几个动画。 */
+@media (prefers-reduced-motion: reduce) {
+  .hero-overline,
+  .hero-slogan,
+  .hero-subtitle,
+  .hero-actions {
+    opacity: 1;
+    animation: none;
+  }
+
+  .hero-title-char {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+
+  .hero-bg::before,
+  .hero-bg::after {
+    animation: none;
+  }
+
+  .carousel-slide-bg,
+  .carousel-slide-pattern,
+  .carousel-slide.active .carousel-slide-bg,
+  .carousel-slide.active .carousel-slide-pattern {
+    transform: none;
+    transition: none;
+  }
+
+  /* 扫光保持停在屏外的默认位置，复位 transform 反而会让它停在画面正中 */
+  .carousel-sheen,
+  .carousel-slide.active .carousel-sheen,
+  .carousel-slide.active .carousel-badge,
+  .carousel-slide.active .carousel-title,
+  .carousel-slide.active .carousel-subtitle {
+    animation: none;
+  }
+
+  .bu-home.reveal-armed .reveal-item {
+    opacity: 1;
+    animation: none;
+  }
+
+  .hero-btn.primary::after {
+    display: none;
+  }
 }
 
 /* ========== Responsive ========== */
