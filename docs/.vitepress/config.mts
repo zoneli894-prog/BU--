@@ -31,6 +31,13 @@ export default defineConfig({
       { text: '新闻动态', link: '/news/' },
       { text: '成员文章', link: '/articles/' },
       { text: '资料库', link: '/resources/' },
+      // 游戏为独立页面、无站内导航，新标签页打开以免访客无法返回本站
+      {
+        text: '2048 小游戏',
+        link: '/2048/',
+        target: '_blank',
+        rel: 'noopener noreferrer',
+      },
     ],
     sidebar: {
       '/news/': [
