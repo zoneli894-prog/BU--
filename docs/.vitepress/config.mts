@@ -1,13 +1,18 @@
 import { defineConfig } from 'vitepress'
 
+// 单一来源：修改 base 时只需改这里。
+// 注意 VitePress 只会给 themeConfig 中的路径自动加 base，
+// head 中的链接必须手动拼接，否则部署到子路径后会 404。
+const base = '/BU--'
+
 export default defineConfig({
-  base: '/BU--',
+  base,
   title: 'Brother Union',
   description: '凝聚力量，共拓边界',
   lang: 'zh-CN',
   head: [
     ['meta', { name: 'viewport', content: 'width=device-width, initial-scale=1.0' }],
-    ['link', { rel: 'icon', href: '/favicon.ico' }],
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: `${base}/favicon.svg` }],
     ['script', { src: 'https://identity.netlify.com/v1/netlify-identity-widget.js' }],
   ],
   themeConfig: {

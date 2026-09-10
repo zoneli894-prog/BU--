@@ -328,6 +328,17 @@ body:has(.bu-home) .VPDocFooter {
   color: #fff;
 }
 
+.download-btn--disabled {
+  background: var(--bu-ivory-dark);
+  color: var(--bu-text-light);
+  cursor: not-allowed;
+}
+
+.download-btn--disabled:hover {
+  background: var(--bu-ivory-dark);
+  color: var(--bu-text-light);
+}
+
 /* === Org Chart === */
 .org-tree {
   display: flex;

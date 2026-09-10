@@ -42,7 +42,7 @@ const groups = [
     title: '各部门骨干',
     members: [
       { name: '谢事成', role: '宣传部部长', quote: '好的故事会自己传播', link: '/members/xie-shicheng' },
-      { name: '蒋诗翰', role: '外联部部长', quote: '每一次握手都是一扇新的窗', link: '/members/jiang-ishan' },
+      { name: '蒋诗翰', role: '外联部部长', quote: '每一次握手都是一扇新的窗', link: '/members/jiang-shihan' },
       { name: '杨仲燚', role: '活动部部长', quote: '让每个人都有参与感', link: '/members/yang-zhongyi' },
       { name: '张彭博', role: '技术部部长', quote: '技术为人服务', link: '/members/zhang-pengbo' },
       { name: '赖哲君', role: '财务部部长', quote: '每一分钱都花在刀刃上', link: '/members/lai-zhejun' },
