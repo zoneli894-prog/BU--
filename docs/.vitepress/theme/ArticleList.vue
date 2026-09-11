@@ -13,10 +13,9 @@
     </div>
 
     <div class="article-list">
-      <a
+      <div
         v-for="article in filtered"
         :key="article.link"
-        :href="withBase(article.link)"
         class="article-card"
       >
         <div class="article-card-body">
@@ -24,16 +23,28 @@
             <span class="article-tag">{{ article.category }}</span>
             <span class="article-date">{{ article.date }}</span>
           </div>
-          <h3 class="article-title">{{ article.title }}</h3>
+          <h3 class="article-title">
+            <!-- 用拉伸遮罩让整张卡片可点；作者链接单独抬起一层，
+                 这样既有整卡点击，又不会出现 <a> 套 <a> 的非法结构 -->
+            <a class="article-title-link" :href="withBase(article.link)">{{ article.title }}</a>
+          </h3>
           <p class="article-summary">{{ article.summary }}</p>
           <div class="article-footer">
-            <span class="article-author">
+            <a
+              v-if="article.authorLink"
+              :href="withBase(article.authorLink)"
+              class="article-author article-author--link"
+            >
+              <span class="author-dot">{{ article.author[0] }}</span>
+              {{ article.author }}
+            </a>
+            <span v-else class="article-author">
               <span class="author-dot">{{ article.author[0] }}</span>
               {{ article.author }}
             </span>
           </div>
         </div>
-      </a>
+      </div>
     </div>
   </div>
 </template>
@@ -41,52 +52,14 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { withBase } from 'vitepress'
+import articlesData from '../../data/articles.json'
 
 const categories = ['全部', '学术思考', '成长感悟', '活动复盘']
 const activeCat = ref('全部')
 
-const articles = [
-  {
-    title: '论非商业组织的可持续发展路径',
-    author: '张铭远',
-    date: '2026-04-10',
-    category: '学术思考',
-    summary: '从 BU 的实践出发，探讨非商业性质团体如何在不依赖经济激励的情况下保持组织活力和成员凝聚力。',
-    link: '/articles/sustainable-development',
-  },
-  {
-    title: '我在 BU 的三年：从参与者到组织者',
-    author: '周天翔',
-    date: '2026-03-20',
-    category: '成长感悟',
-    summary: '回顾自己在 BU 三年的成长历程，从最初的活动参与者到如今的活动部部长，分享组织能力提升的点滴心得。',
-    link: '/articles/my-three-years',
-  },
-  {
-    title: '团队协作中的沟通艺术',
-    author: '徐晨洛',
-    date: '2026-02-28',
-    category: '学术思考',
-    summary: '结合 BU 内部协作经验，探讨高效团队沟通的原则、方法和常见误区。',
-    link: '/articles/communication-art',
-  },
-  {
-    title: '2025 春季团建复盘：我们做对了什么',
-    author: '周天翔',
-    date: '2025-05-15',
-    category: '活动复盘',
-    summary: '对 2025 年春季团建活动进行系统复盘，总结成功经验和改进空间。',
-    link: '/articles/spring-review-2025',
-  },
-  {
-    title: '如何在团队中建立真正的信任',
-    author: '王承志',
-    date: '2025-11-10',
-    category: '成长感悟',
-    summary: '信任不是口号，而是日复一日的行动积累。分享在 BU 管理实践中关于信任建立的思考。',
-    link: '/articles/building-trust',
-  },
-]
+// 文章清单来自 docs/data/articles.json，可在 CMS 后台「成员文章」中维护。
+// 注意：新增文章后需要在 CMS 里同步补一条清单记录，列表页才会显示。
+const articles = articlesData.articles
 
 const filtered = computed(() => {
   if (activeCat.value === '全部') return articles
@@ -107,8 +80,8 @@ const filtered = computed(() => {
   background: var(--vp-c-bg);
   border: 1px solid var(--bu-border);
   border-radius: 12px;
-  text-decoration: none;
-  color: inherit;
+  /* 标题链接用绝对定位铺满卡片，需要卡片作为定位参照 */
+  position: relative;
   transition: all 0.3s;
 }
 
@@ -152,6 +125,25 @@ const filtered = computed(() => {
   line-height: 1.4;
 }
 
+/* 标题链接铺满整张卡片（stretched link），点卡片任意处都能进文章 */
+.article-title-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.article-title-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+}
+
+/* 焦点环画在卡片上，避免铺满的伪元素把轮廓挤出可视区 */
+.article-card:focus-within {
+  border-color: var(--bu-gold);
+  box-shadow: 0 0 0 2px var(--bu-gold-light);
+}
+
 .article-summary {
   font-size: 0.9rem;
   color: var(--bu-text-light);
@@ -171,6 +163,23 @@ const filtered = computed(() => {
   font-size: 0.85rem;
   color: var(--bu-text);
   font-weight: 500;
+}
+
+/* 作者名可点到成员详情页；带条下划线暗示可点，避免被误认成纯文本。
+   同时抬到卡片遮罩之上，否则点作者会被整卡链接抢走 */
+.article-author--link {
+  position: relative;
+  z-index: 1;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition:
+    color 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.article-author--link:hover {
+  color: var(--bu-gold-dark);
+  border-bottom-color: var(--bu-gold);
 }
 
 .author-dot {

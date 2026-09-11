@@ -4,9 +4,9 @@
 
 <div class="news-list">
 
-<a href="/news/spring-team-building-2026" class="news-card">
+<a href="./spring-team-building-2026" class="news-card">
   <div class="news-thumb">
-    <span> </span>
+    <span>活</span>
   </div>
   <div class="news-body">
     <span class="news-tag">活动总结</span>
@@ -16,21 +16,21 @@
   </div>
 </a>
 
-<a href="/news/core-interview-2026" class="news-card">
+<a href="./core-interview-2026" class="news-card">
   <div class="news-thumb">
-    <span> </span>
+    <span>访</span>
   </div>
   <div class="news-body">
     <span class="news-tag">成员专访</span>
     <h3 class="news-title">对话核心层：BU 未来三年的发展方向</h3>
     <p class="news-meta">2026-03-15 · 阅读约 8 分钟</p>
-    <p class="news-summary">主席王承志与副主席陈嘉慧接受了专访，就 BU 的战略规划、成员培养以及社会公益等方面进行了深入交流。</p>
+    <p class="news-summary">主席李镇佑与副主席魏江鸣接受了专访，就 BU 的战略规划、成员培养以及社会公益等方面进行了深入交流。</p>
   </div>
 </a>
 
-<a href="/news/leadership-change-2026" class="news-card">
+<a href="./leadership-change-2026" class="news-card">
   <div class="news-thumb">
-    <span> </span>
+    <span>告</span>
   </div>
   <div class="news-body">
     <span class="news-tag">内部通告</span>
@@ -40,9 +40,9 @@
   </div>
 </a>
 
-<a href="/news/annual-review-2025" class="news-card">
+<a href="./annual-review-2025" class="news-card">
   <div class="news-thumb">
-    <span> </span>
+    <span>回</span>
   </div>
   <div class="news-body">
     <span class="news-tag">活动总结</span>

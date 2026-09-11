@@ -1,0 +1,49 @@
+{
+  "articles": [
+    {
+      "title": "论非商业组织的可持续发展路径",
+      "author": "谢事成",
+      "authorLink": "/members/xie-shicheng",
+      "date": "2026-04-10",
+      "category": "学术思考",
+      "summary": "从 BU 的实践出发，探讨非商业性质团体如何在不依赖经济激励的情况下保持组织活力和成员凝聚力。",
+      "link": "/articles/sustainable-development"
+    },
+    {
+      "title": "我在 BU 的三年：从参与者到组织者",
+      "author": "杨仲燚",
+      "authorLink": "/members/yang-zhongyi",
+      "date": "2026-03-20",
+      "category": "成长感悟",
+      "summary": "回顾自己在 BU 三年的成长历程，从最初的活动参与者到如今的活动部部长，分享组织能力提升的点滴心得。",
+      "link": "/articles/my-three-years"
+    },
+    {
+      "title": "团队协作中的沟通艺术",
+      "author": "徐晨洛",
+      "authorLink": "/members/xu_chenluo",
+      "date": "2026-02-28",
+      "category": "学术思考",
+      "summary": "结合 BU 内部协作经验，探讨高效团队沟通的原则、方法和常见误区。",
+      "link": "/articles/communication-art"
+    },
+    {
+      "title": "2025 春季团建复盘：我们做对了什么",
+      "author": "杨仲燚",
+      "authorLink": "/members/yang-zhongyi",
+      "date": "2025-05-15",
+      "category": "活动复盘",
+      "summary": "对 2025 年春季团建活动进行系统复盘，总结成功经验和改进空间。",
+      "link": "/articles/spring-review-2025"
+    },
+    {
+      "title": "如何在团队中建立真正的信任",
+      "author": "李镇佑",
+      "authorLink": "/members/li-zhenyou",
+      "date": "2025-11-10",
+      "category": "成长感悟",
+      "summary": "信任不是口号，而是日复一日的行动积累。分享在 BU 管理实践中关于信任建立的思考。",
+      "link": "/articles/building-trust"
+    }
+  ]
+}

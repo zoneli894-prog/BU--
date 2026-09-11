@@ -8,6 +8,13 @@ media_folder: "docs/public/images"
 public_folder: "/images"
 
 # 下面是后台的文章管理模块配置
+#
+# ⚠️ 字段名必须与页面实际读取的字段保持一致，否则编辑后前台显示不出来。
+# 对应关系：
+#   docs/data/*.json        → 结构化数据（时间轴 / 架构 / 首页 / 人物网格 / 文章清单 / 资料库）
+#   docs/articles/*.md      → 文章正文，frontmatter 用 summary 作为摘要
+#   docs/news/*.md          → 新闻正文
+#   docs/members/*.md       → 成员详情页，frontmatter 用 quote 作为座右铭
 collections:
   - name: "timeline"
     label: "时间轴 (Timeline)"
@@ -84,17 +91,76 @@ collections:
               - {label: "标签", name: "tag", widget: "string"}
               - {label: "链接", name: "link", widget: "string"}
 
+  - name: "member-grid"
+    label: "人物列表 (Member Grid)"
+    files:
+      - name: "member-grid"
+        label: "人物介绍列表"
+        file: "docs/data/member-grid.json"
+        fields:
+          - label: "分组"
+            name: "groups"
+            widget: "list"
+            fields:
+              - {label: "分组名称", name: "title", widget: "string"}
+              - label: "成员"
+                name: "members"
+                widget: "list"
+                fields:
+                  - {label: "姓名", name: "name", widget: "string"}
+                  - {label: "职位", name: "role", widget: "string"}
+                  - {label: "格言", name: "quote", widget: "string"}
+                  - {label: "详情页链接", name: "link", widget: "string", hint: "例如 /members/li-zhenyou"}
+
+  - name: "articles-index"
+    label: "文章清单 (Article Index)"
+    files:
+      - name: "articles"
+        label: "成员文章列表"
+        file: "docs/data/articles.json"
+        fields:
+          - label: "文章"
+            name: "articles"
+            widget: "list"
+            summary: "{{fields.title}} — {{fields.author}}"
+            fields:
+              - {label: "标题", name: "title", widget: "string"}
+              - {label: "作者", name: "author", widget: "string"}
+              - {label: "作者详情页链接", name: "authorLink", widget: "string", required: false, hint: "例如 /members/xie-shicheng"}
+              - {label: "日期", name: "date", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD"}
+              - {label: "分类", name: "category", widget: "select", options: ["学术思考", "成长感悟", "活动复盘"]}
+              - {label: "摘要", name: "summary", widget: "text"}
+              - {label: "正文链接", name: "link", widget: "string", hint: "例如 /articles/sustainable-development"}
+
+  - name: "resources"
+    label: "资料库 (Resources)"
+    files:
+      - name: "resources"
+        label: "资料文件清单"
+        file: "docs/data/resources.json"
+        fields:
+          - label: "文件"
+            name: "files"
+            widget: "list"
+            summary: "{{fields.name}}"
+            fields:
+              - {label: "文件名", name: "name", widget: "string"}
+              - {label: "分类", name: "category", widget: "select", options: ["规章制度", "活动手册", "研究报告", "多媒体存档"]}
+              - {label: "格式", name: "format", widget: "string"}
+              - {label: "更新日期", name: "date", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD"}
+              - {label: "下载地址", name: "url", widget: "string", required: false, hint: "留空表示「待上传」。上传文件到 docs/public/files/ 后填 /files/文件名"}
+
   - name: "articles"
-    label: "成员文章 (Articles)"
+    label: "成员文章正文 (Articles)"
     folder: "docs/articles"
     create: true
     slug: "{{slug}}"
     fields:
       - {label: "标题", name: "title", widget: "string"}
       - {label: "作者", name: "author", widget: "string"}
-      - {label: "日期", name: "date", widget: "datetime"}
+      - {label: "日期", name: "date", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD"}
       - {label: "分类", name: "category", widget: "select", options: ["学术思考", "成长感悟", "活动复盘"]}
-      - {label: "摘要", name: "excerpt", widget: "text", required: false}
+      - {label: "摘要", name: "summary", widget: "text", required: false}
       - {label: "正文", name: "body", widget: "markdown"}
 
   - name: "news"
@@ -104,20 +170,19 @@ collections:
     slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
     fields:
       - {label: "标题", name: "title", widget: "string"}
-      - {label: "日期", name: "date", widget: "datetime"}
+      - {label: "日期", name: "date", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD"}
       - {label: "作者", name: "author", widget: "string", required: false}
-      - {label: "分类", name: "category", widget: "string", required: false}
+      - {label: "分类", name: "category", widget: "select", options: ["活动总结", "成员专访", "内部通告"], required: false}
       - {label: "正文", name: "body", widget: "markdown"}
 
   - name: "members"
-    label: "人物介绍 (Members)"
+    label: "人物详情 (Members)"
     folder: "docs/members"
     create: true
     slug: "{{slug}}"
     fields:
       - {label: "姓名", name: "name", widget: "string"}
       - {label: "职位", name: "role", widget: "string"}
-      - {label: "任期", name: "term", widget: "string"}
+      - {label: "格言", name: "quote", widget: "string"}
       - {label: "头像", name: "avatar", widget: "image", required: false}
-      - {label: "座右铭", name: "motto", widget: "string", required: false}
       - {label: "介绍正文", name: "body", widget: "markdown"}

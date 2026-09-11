@@ -464,6 +464,14 @@ body:has(.bu-home) .VPDocFooter {
   font-size: 2rem;
 }
 
+/* 缩略图目前用分类首字占位；等有真实配图后换成 <img> 即可 */
+.news-thumb span {
+  font-family: var(--vp-font-family-serif);
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
 .news-body {
   flex: 1;
 }

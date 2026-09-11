@@ -13,6 +13,29 @@ export default defineConfig({
   head: [
     ['meta', { name: 'viewport', content: 'width=device-width, initial-scale=1.0' }],
     ['link', { rel: 'icon', type: 'image/svg+xml', href: `${base}/favicon.svg` }],
+    ['meta', { name: 'theme-color', content: '#1a2744' }],
+    ['meta', { name: 'author', content: 'Brother Union' }],
+    [
+      'meta',
+      {
+        name: 'description',
+        content: 'Brother Union（BU）官方网站 — 非商业性质团体，展示组织历程、架构、成员风采、新闻动态与共享资料。凝聚力量，共拓边界。',
+      },
+    ],
+    // og:url / og:image 必须是绝对地址，社交平台不会解析相对路径
+    ['meta', { property: 'og:type', content: 'website' }],
+    ['meta', { property: 'og:site_name', content: 'Brother Union' }],
+    ['meta', { property: 'og:title', content: 'Brother Union 官方网站' }],
+    [
+      'meta',
+      {
+        property: 'og:description',
+        content: '非商业性质团体 · 志同道合 · 共同成长。凝聚力量，共拓边界。',
+      },
+    ],
+    ['meta', { property: 'og:url', content: 'https://zoneli894-prog.github.io/BU--/' }],
+    ['meta', { property: 'og:image', content: 'https://zoneli894-prog.github.io/BU--/logo.svg' }],
+    ['meta', { name: 'twitter:card', content: 'summary' }],
     ['script', { src: 'https://identity.netlify.com/v1/netlify-identity-widget.js' }],
   ],
   themeConfig: {

@@ -50,25 +50,15 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { withBase } from 'vitepress'
+import resourcesData from '../../data/resources.json'
 
 const categories = ['全部', '规章制度', '活动手册', '研究报告', '多媒体存档']
 const activeCat = ref('全部')
 
+// 清单来自 docs/data/resources.json，可在 CMS 后台「资料库」中维护。
 // url 为 null 表示文件尚未上传，表格中会显示「待上传」。
 // 上传文件到 docs/public/files/ 后，把 url 填成 '/files/文件名' 即可启用下载。
-const files = [
-  { name: 'BU 组织章程（2024修订版）', category: '规章制度', format: 'PDF', date: '2024-06-15', url: null },
-  { name: '成员行为准则', category: '规章制度', format: 'PDF', date: '2023-03-01', url: null },
-  { name: '财务管理制度', category: '规章制度', format: 'PDF', date: '2023-09-20', url: null },
-  { name: '2025年度活动手册', category: '活动手册', format: 'PDF', date: '2025-01-10', url: null },
-  { name: '春季团建活动策划书', category: '活动手册', format: 'PDF', date: '2026-03-01', url: null },
-  { name: '五周年庆典活动方案', category: '活动手册', format: 'PDF', date: '2024-05-20', url: null },
-  { name: 'BU 发展战略白皮书 2025-2028', category: '研究报告', format: 'PDF', date: '2025-02-15', url: null },
-  { name: '成员满意度调研报告（2025）', category: '研究报告', format: 'PDF', date: '2025-11-30', url: null },
-  { name: '组织治理模式研究', category: '研究报告', format: 'PDF', date: '2024-08-10', url: null },
-  { name: '五周年纪念视频', category: '多媒体存档', format: 'MP4', date: '2024-06-01', url: null },
-  { name: '年度回顾相册（2025）', category: '多媒体存档', format: 'ZIP', date: '2025-12-25', url: null },
-]
+const files = resourcesData.files
 
 const filtered = computed(() => {
   if (activeCat.value === '全部') return files

@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>2048</title>
+  <title>BU 2048 · 合并成员卡片</title>
 
   <link href="style/main.css" rel="stylesheet" type="text/css">
   <link rel="shortcut icon" href="favicon.ico">
@@ -15,12 +15,34 @@
   <meta name="HandheldFriendly" content="True">
   <meta name="MobileOptimized" content="320">
   <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0, maximum-scale=1, user-scalable=no, minimal-ui">
+
+  <!--
+    BU 品牌覆盖样式。
+    2048 原始界面是米黄底 + 深棕文字，与站点风格冲突；
+    这里只覆盖底色、正文色和标题字色，不改字号等尺寸，
+    避免盖掉 main.css 里的响应式断点。
+  -->
+  <style>
+    html, body {
+      background: #f4f2ec;
+      color: #1a2744;
+    }
+
+    h1.title {
+      color: #1a2744;
+      letter-spacing: 0.04em;
+    }
+
+    .game-intro strong {
+      color: #a8873f;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
     <div class="game-column">
     <div class="heading">
-      <h1 class="title">2048</h1>
+      <h1 class="title">BU 2048</h1>
       <div class="scores-container">
         <div class="score-container">0</div>
         <div class="best-container">0</div>

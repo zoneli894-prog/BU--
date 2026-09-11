@@ -193,7 +193,7 @@ const revealArmed = ref(false)
 const stats = [
   { value: '8', label: '年历程' },
   { value: '42', label: '位成员' },
-  { value: '5', label: '大部门' },
+  { value: '6', label: '大部门' },
   { value: '100+', label: '场活动' },
 ]
 
@@ -202,7 +202,7 @@ const statDisplay = ref(stats.map(s => s.value))
 
 const quickLinks = [
   { icon: '⏳', label: '历史沿革', desc: '八年成长之路', href: withBase('/history/') },
-  { icon: '🏛', label: '组织架构', desc: '主席团与五部门', href: withBase('/structure/') },
+  { icon: '🏛', label: '组织架构', desc: '主席团与六大部门', href: withBase('/structure/') },
   { icon: '👥', label: '人物介绍', desc: '认识每一位成员', href: withBase('/members/') },
   { icon: '📚', label: '资料库', desc: '文档与资源下载', href: withBase('/resources/') },
   { icon: '✍️', label: '成员文章', desc: '思考、感悟与复盘', href: withBase('/articles/') },
