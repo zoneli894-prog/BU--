@@ -82,7 +82,10 @@ const filtered = computed(() => {
   border-radius: 12px;
   /* 标题链接用绝对定位铺满卡片，需要卡片作为定位参照 */
   position: relative;
-  transition: all 0.3s;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .article-card:hover {

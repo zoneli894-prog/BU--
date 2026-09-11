@@ -124,12 +124,20 @@ body:has(.bu-home) .VPDocFooter {
   position: relative;
   width: 45%;
   padding: 1.5rem;
-  opacity: 0;
-  transform: translateY(30px);
-  transition: all 0.6s ease;
+  /* 隐藏态只在 JS 就绪（.reveal-armed）时生效，避免脚本失效导致整页空白 */
+  transition:
+    opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.timeline-item.visible {
+.bu-timeline.reveal-armed .timeline-item {
+  opacity: 0;
+  transform: translateY(30px);
+  /* 提示浏览器把这层交给合成器；transitionDelay 由组件按序号内联下发 */
+  will-change: opacity, transform;
+}
+
+.bu-timeline .timeline-item.visible {
   opacity: 1;
   transform: translateY(0);
 }
@@ -218,7 +226,11 @@ body:has(.bu-home) .VPDocFooter {
   padding: 2rem 1.5rem;
   text-align: center;
   cursor: pointer;
-  transition: all 0.3s ease;
+  /* 只过渡真正会变的三个属性；transition: all 会让浏览器每帧比对所有属性 */
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .member-card:hover {
@@ -442,7 +454,10 @@ body:has(.bu-home) .VPDocFooter {
   border-radius: 12px;
   text-decoration: none;
   color: inherit;
-  transition: all 0.3s;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .news-card:hover {
@@ -508,47 +523,6 @@ body:has(.bu-home) .VPDocFooter {
   margin: 0;
 }
 
-/* === Quick Links === */
-.quick-links {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  margin: 1.5rem 0;
-}
-
-.quick-link {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 1.25rem;
-  background: var(--vp-c-bg);
-  border: 1px solid var(--bu-border);
-  border-radius: 10px;
-  text-decoration: none;
-  color: var(--bu-navy);
-  font-weight: 600;
-  transition: all 0.2s;
-}
-
-.quick-link:hover {
-  border-color: var(--bu-gold);
-  background: var(--bu-ivory);
-  transform: translateY(-2px);
-}
-
-.quick-link-icon {
-  width: 40px;
-  height: 40px;
-  background: var(--bu-navy);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--bu-gold);
-  font-size: 1.2rem;
-  flex-shrink: 0;
-}
-
 /* === Category Filter === */
 .category-filter {
   display: flex;
@@ -565,7 +539,10 @@ body:has(.bu-home) .VPDocFooter {
   color: var(--bu-text);
   font-size: 0.85rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .cat-btn:hover,
@@ -573,6 +550,23 @@ body:has(.bu-home) .VPDocFooter {
   background: var(--bu-navy);
   color: var(--bu-gold);
   border-color: var(--bu-navy);
+}
+
+/* === Motion Preferences === */
+/* 平滑滚动改为在站点层统一开关，各组件只需声明 scroll-margin。
+   放在这里而不是组件里，是为了让浮动导航栏的遮挡偏移也只有一处。 */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* 锚点跳转后标题不要被吸顶导航压住 */
+:target,
+.vp-doc h2,
+.vp-doc h3,
+.vp-doc h4 {
+  scroll-margin-top: calc(var(--vp-nav-height, 64px) + 1rem);
 }
 
 /* === Responsive === */

@@ -32,7 +32,19 @@
 
     <!-- Carousel Section -->
     <section class="carousel-section">
-      <div class="carousel">
+      <div
+        class="carousel"
+        ref="carouselSection"
+        tabindex="0"
+        role="region"
+        aria-roledescription="轮播"
+        aria-label="BU 近期动态，可用左右方向键切换"
+        @mouseenter="hovered = true"
+        @mouseleave="hovered = false"
+        @focusin="hovered = true"
+        @focusout="hovered = false"
+        @keydown="onCarouselKeydown"
+      >
         <div
           v-for="(slide, i) in slides"
           :key="i"
@@ -56,7 +68,8 @@
               class="carousel-dot"
               :class="{ active: currentSlide === i }"
               @click="goToSlide(i)"
-              :aria-label="'Slide ' + (i+1)"
+              :aria-label="'切换到第 ' + (i+1) + ' 张：' + slides[i].title"
+              :aria-current="currentSlide === i ? 'true' : undefined"
             ></button>
           </div>
           <div class="carousel-progress">
@@ -177,7 +190,7 @@
 
 <script setup>
 import { withBase } from 'vitepress'
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import slidesData from '../../data/home-slides.json'
 import newsData from '../../data/home-news.json'
 
@@ -185,10 +198,17 @@ const heroCanvas = ref(null)
 const visionSection = ref(null)
 const newsSection = ref(null)
 const linksSection = ref(null)
+const carouselSection = ref(null)
 
 // 入场动画的「上膛」开关。只有 JS 跑起来才会置为 true 并隐藏待入场元素，
 // 这样脚本加载失败时页面只是少了动画，不会变成一片空白。
 const revealArmed = ref(false)
+
+// 轮播暂停条件：指针悬停/键盘聚焦、或整块滚出视口。
+// 两者都只是为了别在没人看的时候空转，不影响任何视觉状态。
+const hovered = ref(false)
+const carouselVisible = ref(true)
+let carouselObserver = null
 
 const stats = [
   { value: '8', label: '年历程' },
@@ -220,19 +240,34 @@ const slides = slidesData.slides
 const currentSlide = ref(0)
 const progressWidth = ref(0)
 let timer = null
-let progressTimer = null
-const PROGRESS_INTERVAL = 50
+let progressFrame = null
+let progressStart = 0
 const SLIDE_DURATION = 5000
 
+// 系统关掉动效时不做自动轮播：闪烁的内容对这类用户是干扰
+let reducedMotion = false
+
+// 悬停/聚焦（想看清当前这张）或整块滚出视口时暂停自动切换
+function canAutoPlay() {
+  return !reducedMotion && !hovered.value && carouselVisible.value
+}
+
+function stopProgress() {
+  if (progressFrame) cancelAnimationFrame(progressFrame)
+  progressFrame = null
+}
+
+// 用 rAF 而不是 setInterval：原先 50ms 一跳、每跳配 0.05s 过渡，
+// 两者不同步时会看到进度条一顿一顿地走
 function startProgress() {
-  progressWidth.value = 0
-  clearInterval(progressTimer)
-  progressTimer = setInterval(() => {
-    progressWidth.value += (PROGRESS_INTERVAL / SLIDE_DURATION) * 100
-    if (progressWidth.value >= 100) {
-      progressWidth.value = 100
-    }
-  }, PROGRESS_INTERVAL)
+  stopProgress()
+  progressStart = performance.now()
+  const step = (now) => {
+    const t = Math.min(1, (now - progressStart) / SLIDE_DURATION)
+    progressWidth.value = t * 100
+    progressFrame = t < 1 ? requestAnimationFrame(step) : null
+  }
+  progressFrame = requestAnimationFrame(step)
 }
 
 function nextSlide() {
@@ -240,12 +275,41 @@ function nextSlide() {
   startProgress()
 }
 
-function goToSlide(i) {
-  currentSlide.value = i
+function startAutoPlay() {
   clearInterval(timer)
-  timer = setInterval(nextSlide, SLIDE_DURATION)
+  timer = null
+  if (!canAutoPlay()) return
+  timer = setInterval(() => {
+    if (!canAutoPlay()) return
+    nextSlide()
+  }, SLIDE_DURATION)
   startProgress()
 }
+
+function stopAutoPlay() {
+  clearInterval(timer)
+  timer = null
+  stopProgress()
+}
+
+function goToSlide(i) {
+  currentSlide.value = i
+  // 手动切换后重新开始计时，否则可能刚点完就立刻跳到下一张
+  startAutoPlay()
+}
+
+function onCarouselKeydown(e) {
+  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+  e.preventDefault()
+  const delta = e.key === 'ArrowRight' ? 1 : -1
+  goToSlide((currentSlide.value + delta + slides.length) % slides.length)
+}
+
+// 暂停条件变化时同步定时器；恢复播放会重置这一张的计时
+watch([hovered, carouselVisible], () => {
+  if (canAutoPlay()) startAutoPlay()
+  else stopAutoPlay()
+})
 
 // ---------- Hero 粒子 ----------
 // 三层景深：远的更小更暗更慢，近的更大更亮更快，再叠上鼠标视差拉开空间感。
@@ -426,6 +490,7 @@ function runCountUp() {
 
 function initScrollReveal() {
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  reducedMotion = reduced
   if (reduced) return // 不做入场动画，内容保持直接可见
 
   // 先「上膛」再开始观察，此时首帧尚未绘制，不会有内容闪现再消失
@@ -437,7 +502,13 @@ function initScrollReveal() {
       if (!entry.isIntersecting) return
       entry.target.classList.add('revealed')
       revealObserver.unobserve(entry.target)
-      if (entry.target === visionSection.value) runCountUp()
+      // 等数字所在的那一批淡入完再开始递增。
+      // 之前是立刻开跑，1.5 秒的动画正好被 0.85s + 延迟的入场动画盖住，等于白做。
+      if (entry.target === visionSection.value) {
+        setTimeout(() => {
+          if (revealObserver) runCountUp()
+        }, 500)
+      }
     })
   }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' })
 
@@ -445,19 +516,30 @@ function initScrollReveal() {
   sections.forEach(el => { if (el) revealObserver.observe(el) })
 }
 
+// 轮播滚出视口就停掉，别在后台继续 5 秒切一张
+function initCarouselVisibility() {
+  if (!carouselSection.value) return
+  carouselObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      carouselVisible.value = entry.isIntersecting
+    })
+  })
+  carouselObserver.observe(carouselSection.value)
+}
+
 onMounted(() => {
   initCanvas()
   initScrollReveal()
-  timer = setInterval(nextSlide, SLIDE_DURATION)
-  startProgress()
+  initCarouselVisibility()
+  startAutoPlay()
 })
 
 onUnmounted(() => {
-  clearInterval(timer)
-  clearInterval(progressTimer)
+  stopAutoPlay()
   if (animFrame) cancelAnimationFrame(animFrame)
   if (countFrame) cancelAnimationFrame(countFrame)
   if (revealObserver) revealObserver.disconnect()
+  if (carouselObserver) carouselObserver.disconnect()
   if (disposeCanvas) disposeCanvas()
 })
 </script>
@@ -905,7 +987,6 @@ onUnmounted(() => {
 .carousel-progress-bar {
   height: 100%;
   background: linear-gradient(90deg, var(--bu-gold), var(--bu-gold-light));
-  transition: width 0.05s linear;
 }
 
 /* ========== Shared Section Styles ========== */
