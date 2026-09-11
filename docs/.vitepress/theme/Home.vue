@@ -351,9 +351,10 @@ function initParallax() {
     // 逐帧逼近目标值，避免背景跟着指针生硬抖动
     cx += (tx - cx) * 0.06
     cy += (ty - cy) * 0.06
-    // 位移量刻意压得很小：背景板只是衬托，晃太多会晕
-    photo.style.setProperty('--px', `${(cx * -8).toFixed(2)}px`)
-    photo.style.setProperty('--py', `${(cy * -6).toFixed(2)}px`)
+    // 位移量刻意压得很小：背景板只是衬托，晃太多既会晕
+    // 也会让已放大的照片露出边缘
+    photo.style.setProperty('--px', `${(cx * -5).toFixed(2)}px`)
+    photo.style.setProperty('--py', `${(cy * -4).toFixed(2)}px`)
     if (Math.abs(tx - cx) < 0.001 && Math.abs(ty - cy) < 0.001) {
       raf = null
       return
@@ -480,11 +481,16 @@ onUnmounted(() => {
 .hero-photo-img {
   position: absolute;
   inset: 0;
-  background-position: center;
+  /* 合影里人物整体偏左，而 cover 在宽屏下裁掉的是上下而非左右，
+     所以靠 background-position-x 左移取样窗口，把人物推回画面中央。
+     纵向 34%：把取样窗口上提，让照片较亮的中段（而不是底部深色柏油）
+     填满下半屏，否则画面下沿会是一条压暗的暗带。 */
+  background-position: 30% 34%;
   background-size: cover;
   background-repeat: no-repeat;
-  /* 降饱和 + 压对比 + 压亮度，把照片推进「背景板」的角色里 */
-  filter: saturate(0.5) contrast(0.88) brightness(0.72);
+  /* 只降饱和与对比，不再压亮度——压暗交给下面的蒙版统一处理，
+     两处同时压会把人物压得看不见 */
+  filter: saturate(0.55) contrast(0.9);
   /* 放大一点，让视差位移不会露出边缘。
      --px/--py 由 initParallax() 跟随指针写入，默认 0 时不影响静态呈现 */
   transform: scale(1.08) translate3d(var(--px, 0px), var(--py, 0px), 0);
@@ -505,21 +511,21 @@ onUnmounted(() => {
   background:
     linear-gradient(
       180deg,
-      rgba(10, 17, 32, 0.74) 0%,
-      rgba(10, 17, 32, 0.42) 34%,
-      rgba(15, 26, 46, 0.5) 62%,
-      rgba(10, 17, 32, 0.68) 100%
+      rgba(10, 17, 32, 0.58) 0%,
+      rgba(10, 17, 32, 0.28) 32%,
+      rgba(15, 26, 46, 0.2) 62%,
+      rgba(10, 17, 32, 0.3) 100%
     ),
     linear-gradient(
       95deg,
-      rgba(26, 39, 68, 0.55) 0%,
-      rgba(30, 48, 80, 0.26) 45%,
-      rgba(26, 39, 68, 0.52) 100%
+      rgba(26, 39, 68, 0.4) 0%,
+      rgba(30, 48, 80, 0.14) 45%,
+      rgba(26, 39, 68, 0.34) 100%
     ),
     radial-gradient(
       ellipse 76% 58% at 50% 44%,
       transparent 0%,
-      rgba(10, 17, 32, 0.38) 100%
+      rgba(10, 17, 32, 0.16) 100%
     );
   pointer-events: none;
 }
@@ -1423,10 +1429,10 @@ onUnmounted(() => {
     animation: none;
   }
 
-  /* 合影是横构图，窄屏下 cover 会裁掉两侧人物，
-     把焦点略向上移，保证中间那几排人还在画面里 */
+  /* 窄屏下 cover 改为裁掉左右，焦点需要从「偏左的人物」
+     移到人物带的中心，纵向略上移避免裁到前排 */
   .hero-photo-img {
-    background-position: center 42%;
+    background-position: 44% 42%;
   }
 
   .hero-section {
