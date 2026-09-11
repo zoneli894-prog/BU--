@@ -3,7 +3,17 @@
     <!-- Hero Section -->
     <section class="hero-section">
       <div class="hero-bg">
-        <canvas ref="heroCanvas" class="hero-canvas"></canvas>
+        <!-- 2026 团建合影作为背景板。想换图只需替换
+             docs/public/images/hero-team-2026.jpg，无需改代码。
+             两层分工：外层负责自动推近动画，内层负责指针视差，
+             否则两个 transform 会互相覆盖 -->
+        <div class="hero-photo">
+          <div
+            class="hero-photo-img"
+            :style="{ backgroundImage: `url('${withBase('/images/hero-team-2026.jpg')}')` }"
+          ></div>
+        </div>
+        <div class="hero-scrim"></div>
         <div class="hero-grain"></div>
         <div class="hero-vignette"></div>
       </div>
@@ -194,7 +204,6 @@ import { ref, watch, onMounted, onUnmounted } from 'vue'
 import slidesData from '../../data/home-slides.json'
 import newsData from '../../data/home-news.json'
 
-const heroCanvas = ref(null)
 const visionSection = ref(null)
 const newsSection = ref(null)
 const linksSection = ref(null)
@@ -311,160 +320,51 @@ watch([hovered, carouselVisible], () => {
   else stopAutoPlay()
 })
 
-// ---------- Hero 粒子 ----------
-// 三层景深：远的更小更暗更慢，近的更大更亮更快，再叠上鼠标视差拉开空间感。
-// 光点用预渲染的辉光贴图 drawImage 绘制，比逐个 arc + shadowBlur 便宜得多。
-let animFrame = null
-let disposeCanvas = null
+// ---------- 背景照片视差 ----------
+// 原 Hero 的 Canvas 星空粒子已由 2026 团建合影替代（见模板 .hero-photo）。
+// 这里保留鼠标视差：轻微平移照片，让背景与前景文字产生纵深。
+let disposeParallax = null
 
-function makeGlowSprite(rgb) {
-  const size = 64
-  const c = document.createElement('canvas')
-  c.width = c.height = size
-  const g = c.getContext('2d')
-  const r = size / 2
-  const grad = g.createRadialGradient(r, r, 0, r, r, r)
-  const [cr, cg, cb] = rgb
-  grad.addColorStop(0, `rgba(${cr}, ${cg}, ${cb}, 1)`)
-  grad.addColorStop(0.22, `rgba(${cr}, ${cg}, ${cb}, 0.42)`)
-  grad.addColorStop(0.55, `rgba(${cr}, ${cg}, ${cb}, 0.09)`)
-  grad.addColorStop(1, `rgba(${cr}, ${cg}, ${cb}, 0)`)
-  g.fillStyle = grad
-  g.fillRect(0, 0, size, size)
-  return c
-}
-
-function initCanvas() {
-  const canvas = heroCanvas.value
-  if (!canvas) return
-  const ctx = canvas.getContext('2d')
-  if (!ctx) return
+function initParallax() {
+  const photo = document.querySelector('.hero-photo-img')
+  if (!photo) return
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   const finePointer = window.matchMedia('(pointer: fine)').matches
+  // 视差只在能精确指向的设备上开启；触屏没有 hover，加了反而白费一次合成
+  if (reduced || !finePointer) return
 
-  // 只能在浏览器里创建，SSR 阶段没有 document
-  const sprites = [
-    makeGlowSprite([150, 178, 220]), // 远景偏冷
-    makeGlowSprite([196, 182, 158]), // 中景过渡
-    makeGlowSprite([201, 169, 110]), // 近景香槟金
-  ]
-
-  let w = 0
-  let h = 0
-  let particles = []
-  let time = 0
-  // tx/ty 是鼠标目标值，x/y 逐帧逼近，避免粒子跟着指针生硬抖动
-  const pointer = { x: 0, y: 0, tx: 0, ty: 0 }
-
-  function resize() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2)
-    w = canvas.offsetWidth
-    h = canvas.offsetHeight
-    canvas.width = Math.round(w * dpr)
-    canvas.height = Math.round(h * dpr)
-    // 用 setTransform 而不用 scale：反复 resize 时缩放不会层层累加
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-  }
-
-  function createParticles() {
-    const count = Math.min(70, Math.max(22, Math.floor((w * h) / 22000)))
-    particles = []
-    for (let i = 0; i < count; i++) {
-      const z = Math.random() // 0 = 最远，1 = 最近
-      particles.push({
-        x: Math.random() * w,
-        y: Math.random() * h,
-        z,
-        vx: (Math.random() - 0.5) * (0.06 + z * 0.3),
-        vy: (Math.random() - 0.5) * (0.06 + z * 0.3) - z * 0.05,
-        phase: Math.random() * Math.PI * 2,
-        twinkle: 0.5 + Math.random() * 1.1,
-      })
-    }
-  }
-
-  function render() {
-    ctx.clearRect(0, 0, w, h)
-    pointer.x += (pointer.tx - pointer.x) * 0.05
-    pointer.y += (pointer.ty - pointer.y) * 0.05
-
-    for (const p of particles) {
-      p.x += p.vx
-      p.y += p.vy
-
-      // 越界后从另一侧回绕，比反弹更不容易被看出规律
-      if (p.x < -60) p.x = w + 60
-      else if (p.x > w + 60) p.x = -60
-      if (p.y < -60) p.y = h + 60
-      else if (p.y > h + 60) p.y = -60
-
-      const size = 10 + p.z * 34
-      const alpha = (0.08 + p.z * 0.42) * (0.6 + 0.4 * Math.sin(time * p.twinkle + p.phase))
-      const x = p.x - pointer.x * (8 + p.z * 34)
-      const y = p.y - pointer.y * (6 + p.z * 22)
-      const sprite = sprites[p.z < 0.45 ? 0 : p.z < 0.8 ? 1 : 2]
-
-      ctx.globalAlpha = alpha > 0 ? alpha : 0
-      ctx.drawImage(sprite, x - size / 2, y - size / 2, size, size)
-    }
-    ctx.globalAlpha = 1
-  }
-
-  function loop(now) {
-    time = now / 1000
-    render()
-    animFrame = requestAnimationFrame(loop)
-  }
+  let raf = null
+  let tx = 0
+  let ty = 0
+  let cx = 0
+  let cy = 0
 
   function onPointerMove(e) {
-    pointer.tx = (e.clientX / window.innerWidth) * 2 - 1
-    pointer.ty = (e.clientY / window.innerHeight) * 2 - 1
+    tx = (e.clientX / window.innerWidth) * 2 - 1
+    ty = (e.clientY / window.innerHeight) * 2 - 1
+    if (raf) return
+    raf = requestAnimationFrame(step)
   }
 
-  let resizeRaf = null
-  function onResize() {
-    if (resizeRaf) cancelAnimationFrame(resizeRaf)
-    resizeRaf = requestAnimationFrame(() => {
-      resizeRaf = null
-      resize()
-      createParticles()
-      if (reduced) render()
-    })
-  }
-
-  // 切到后台标签页时停掉循环，别白烧电
-  function onVisibilityChange() {
-    if (reduced) return
-    if (document.hidden) {
-      if (animFrame) {
-        cancelAnimationFrame(animFrame)
-        animFrame = null
-      }
-    } else if (!animFrame) {
-      animFrame = requestAnimationFrame(loop)
+  function step() {
+    // 逐帧逼近目标值，避免背景跟着指针生硬抖动
+    cx += (tx - cx) * 0.06
+    cy += (ty - cy) * 0.06
+    // 位移量刻意压得很小：背景板只是衬托，晃太多会晕
+    photo.style.setProperty('--px', `${(cx * -8).toFixed(2)}px`)
+    photo.style.setProperty('--py', `${(cy * -6).toFixed(2)}px`)
+    if (Math.abs(tx - cx) < 0.001 && Math.abs(ty - cy) < 0.001) {
+      raf = null
+      return
     }
+    raf = requestAnimationFrame(step)
   }
 
-  resize()
-  createParticles()
-  window.addEventListener('resize', onResize)
-
-  if (reduced) {
-    // 尊重「减少动态效果」：只画一帧静态星空，不跑动画循环
-    render()
-  } else {
-    animFrame = requestAnimationFrame(loop)
-    if (finePointer) window.addEventListener('pointermove', onPointerMove, { passive: true })
-    document.addEventListener('visibilitychange', onVisibilityChange)
-  }
-
-  // 卸载时统一摘掉监听，否则 HMR / 路由切换后会残留
-  disposeCanvas = () => {
-    window.removeEventListener('resize', onResize)
+  window.addEventListener('pointermove', onPointerMove, { passive: true })
+  disposeParallax = () => {
     window.removeEventListener('pointermove', onPointerMove)
-    document.removeEventListener('visibilitychange', onVisibilityChange)
-    if (resizeRaf) cancelAnimationFrame(resizeRaf)
+    if (raf) cancelAnimationFrame(raf)
   }
 }
 
@@ -528,7 +428,7 @@ function initCarouselVisibility() {
 }
 
 onMounted(() => {
-  initCanvas()
+  initParallax()
   initScrollReveal()
   initCarouselVisibility()
   startAutoPlay()
@@ -536,11 +436,10 @@ onMounted(() => {
 
 onUnmounted(() => {
   stopAutoPlay()
-  if (animFrame) cancelAnimationFrame(animFrame)
   if (countFrame) cancelAnimationFrame(countFrame)
   if (revealObserver) revealObserver.disconnect()
   if (carouselObserver) carouselObserver.disconnect()
-  if (disposeCanvas) disposeCanvas()
+  if (disposeParallax) disposeParallax()
 })
 </script>
 
@@ -553,7 +452,7 @@ onUnmounted(() => {
 /* ========== Hero ========== */
 .hero-section {
   position: relative;
-  min-height: 85vh;
+  min-height: 78vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -563,22 +462,85 @@ onUnmounted(() => {
 .hero-bg {
   position: absolute;
   inset: 0;
+  /* 兜底底色：照片未加载或加载失败时仍是原来的渐变，不会露出白底 */
   background: linear-gradient(160deg, #0a1120 0%, #1a2744 35%, #1e3050 65%, #0f1a2e 100%);
   z-index: 0;
 }
 
-/* 两团缓慢游移的极光，给纯渐变底色一点呼吸感。
-   用 radial-gradient 而非 blur 滤镜，省一层昂贵的模糊合成。 */
+/* --- 背景照片 ---
+   合影细节密度很高（树冠、亮地面、几十个人脸），原样铺底会和文字抢读。
+   分两层：.hero-photo 跑自动推近，.hero-photo-img 承接指针视差。 */
+.hero-photo {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  animation: photoDrift 36s ease-in-out infinite alternate;
+}
+
+.hero-photo-img {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  /* 降饱和 + 压对比 + 压亮度，把照片推进「背景板」的角色里 */
+  filter: saturate(0.5) contrast(0.88) brightness(0.72);
+  /* 放大一点，让视差位移不会露出边缘。
+     --px/--py 由 initParallax() 跟随指针写入，默认 0 时不影响静态呈现 */
+  transform: scale(1.08) translate3d(var(--px, 0px), var(--py, 0px), 0);
+}
+
+@keyframes photoDrift {
+  from { transform: scale(1) translate3d(0, 0, 0); }
+  to { transform: scale(1.045) translate3d(-1.2%, -0.8%, 0); }
+}
+
+/* --- 可读性蒙版 ---
+   横向：下深上浅 + 四周压暗，保证左下的按钮和文字始终压在暗部。
+   纵向中心开一个柔和亮窗，让合影主体还能被看见。 */
+.hero-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(10, 17, 32, 0.74) 0%,
+      rgba(10, 17, 32, 0.42) 34%,
+      rgba(15, 26, 46, 0.5) 62%,
+      rgba(10, 17, 32, 0.68) 100%
+    ),
+    linear-gradient(
+      95deg,
+      rgba(26, 39, 68, 0.55) 0%,
+      rgba(30, 48, 80, 0.26) 45%,
+      rgba(26, 39, 68, 0.52) 100%
+    ),
+    radial-gradient(
+      ellipse 76% 58% at 50% 44%,
+      transparent 0%,
+      rgba(10, 17, 32, 0.38) 100%
+    );
+  pointer-events: none;
+}
+
+/* 两团缓慢游移的极光，给背景一点呼吸感。
+   用 radial-gradient 而非 blur 滤镜，省一层昂贵的模糊合成。
+   z-index 3 必须高于蒙版（1），否则会被压在照片底下看不见。
+   改用 mix-blend-mode: screen —— 叠加模式下只会提亮，不会像默认的
+   normal 那样把照片糊成一层灰雾。 */
 .hero-bg::before,
 .hero-bg::after {
   content: '';
   position: absolute;
+  z-index: 3;
   width: 62vw;
   height: 62vw;
   max-width: 880px;
   max-height: 880px;
   border-radius: 50%;
   pointer-events: none;
+  mix-blend-mode: screen;
 }
 
 .hero-bg::before {
@@ -615,19 +577,11 @@ onUnmounted(() => {
   to { transform: translate3d(-11vw, -7vh, 0) scale(0.94); }
 }
 
-.hero-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-}
-
 .hero-grain {
   position: absolute;
   inset: 0;
-  z-index: 2;
-  opacity: 0.3;
+  z-index: 4;
+  opacity: 0.2;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E");
   background-size: 256px;
   pointer-events: none;
@@ -637,16 +591,16 @@ onUnmounted(() => {
 .hero-vignette {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: 4;
   background: radial-gradient(ellipse at center, transparent 40%, rgba(10,17,32,0.5) 100%);
   pointer-events: none;
 }
 
 .hero-content {
   position: relative;
-  z-index: 3;
+  z-index: 5;
   text-align: center;
-  padding: 2rem;
+  padding: 1rem 2rem 3.5rem;
 }
 
 .hero-overline {
@@ -654,7 +608,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  margin-bottom: 2rem;
+  margin-bottom: 1.25rem;
   opacity: 0;
   animation: fadeSlideUp 0.8s ease 0.1s forwards;
 }
@@ -664,6 +618,8 @@ onUnmounted(() => {
   letter-spacing: 0.35em;
   color: var(--bu-gold);
   font-weight: 600;
+  /* 照片背景上金色本身就偏亮，加一层深色描边兜住树冠等亮部 */
+  text-shadow: 0 1px 8px rgba(10, 17, 32, 0.85);
 }
 
 .hero-line {
@@ -680,6 +636,10 @@ onUnmounted(() => {
   margin: 0 0 1rem;
   letter-spacing: 0.08em;
   line-height: 1.1;
+  /* 双层阴影：近处一层收边压住细节，远处一层柔光把标题从背景里托出来 */
+  text-shadow:
+    0 2px 12px rgba(10, 17, 32, 0.8),
+    0 1px 3px rgba(10, 17, 32, 0.6);
 }
 
 .hero-title-char {
@@ -708,15 +668,23 @@ onUnmounted(() => {
   margin: 0 0 0.75rem;
   letter-spacing: 0.25em;
   font-weight: 500;
+  text-shadow:
+    0 2px 10px rgba(10, 17, 32, 0.85),
+    0 1px 3px rgba(10, 17, 32, 0.7);
   opacity: 0;
   animation: fadeSlideUp 0.8s ease 0.9s forwards;
 }
 
+/* 原来只有 45% 白的副标题在纯渐变上勉强能看，压在照片上会直接糊掉，
+   因此提高不透明度和字重，并补一层阴影 */
 .hero-subtitle {
   font-size: 0.9rem;
-  color: rgba(255,255,255,0.45);
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 400;
   letter-spacing: 0.15em;
-  margin: 0 0 3rem;
+  /* 底下就是按钮，留太多会让按钮被轮播卡片压住 */
+  margin: 0 0 1.75rem;
+  text-shadow: 0 1px 8px rgba(10, 17, 32, 0.8);
   opacity: 0;
   animation: fadeSlideUp 0.8s ease 1.1s forwards;
 }
@@ -789,16 +757,21 @@ onUnmounted(() => {
   transform: translateX(3px);
 }
 
+/* 次要按钮压在照片上时，半透明白字容易和背景细节糊在一起，
+   所以加深底色（模糊只负责衬底）并给文字加阴影 */
 .hero-btn.secondary {
-  border: 1px solid rgba(255,255,255,0.2);
-  color: rgba(255,255,255,0.8);
-  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  color: #fff;
+  background: rgba(10, 17, 32, 0.32);
+  text-shadow: 0 1px 6px rgba(10, 17, 32, 0.8);
+  backdrop-filter: blur(6px);
 }
 
 .hero-btn.secondary:hover {
   border-color: var(--bu-gold);
   color: var(--bu-gold);
-  background: rgba(201,169,110,0.06);
+  background: rgba(10, 17, 32, 0.55);
+  transform: translateY(-2px);
 }
 
 @keyframes fadeSlideUp {
@@ -1411,6 +1384,11 @@ onUnmounted(() => {
     animation: none;
   }
 
+  /* 背景照片停在初始构图，不做推近漂移（视差在 JS 侧已跳过） */
+  .hero-photo {
+    animation: none;
+  }
+
   .carousel-slide-bg,
   .carousel-slide-pattern,
   .carousel-slide.active .carousel-slide-bg,
@@ -1440,12 +1418,36 @@ onUnmounted(() => {
 
 /* ========== Responsive ========== */
 @media (max-width: 768px) {
+  /* 手机上 36 秒的持续动画不值得那点电，背景固定在初始构图即可 */
+  .hero-photo {
+    animation: none;
+  }
+
+  /* 合影是横构图，窄屏下 cover 会裁掉两侧人物，
+     把焦点略向上移，保证中间那几排人还在画面里 */
+  .hero-photo-img {
+    background-position: center 42%;
+  }
+
   .hero-section {
-    min-height: 85vh;
+    min-height: 82vh;
+  }
+
+  /* 3rem 的标题在 390px 屏上实测宽约 325px，而内容区仅 326px——
+     只剩 1px 余量，比 iPhone 13 mini 更窄的机器会直接裁掉 "Union"。
+     收到 2.6rem 并以 dvw 兜底，避免窄屏溢出。 */
+  .hero-content {
+    padding: 1rem 1rem 3rem;
   }
 
   .hero-title {
-    font-size: 3rem;
+    font-size: min(2.6rem, 11.5dvw);
+  }
+
+  /* 照片背景 + 轮播负边距在窄屏容易顶出横向滚动条；
+     clip 不会创建滚动容器，比 hidden 安全 */
+  .bu-home {
+    overflow-x: clip;
   }
 
   .hero-slogan {
@@ -1507,7 +1509,12 @@ onUnmounted(() => {
 
 @media (max-width: 480px) {
   .hero-title {
-    font-size: 2.2rem;
+    font-size: min(2.1rem, 12dvw);
+  }
+
+  .hero-slogan {
+    font-size: 1rem;
+    letter-spacing: 0.1em;
   }
 
   .hero-actions {
