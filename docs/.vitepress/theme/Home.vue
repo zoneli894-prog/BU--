@@ -40,55 +40,6 @@
       </div>
     </section>
 
-    <!-- Carousel Section -->
-    <section class="carousel-section">
-      <div
-        class="carousel"
-        ref="carouselSection"
-        tabindex="0"
-        role="region"
-        aria-roledescription="轮播"
-        aria-label="BU 近期动态，可用左右方向键切换"
-        @mouseenter="hovered = true"
-        @mouseleave="hovered = false"
-        @focusin="hovered = true"
-        @focusout="hovered = false"
-        @keydown="onCarouselKeydown"
-      >
-        <div
-          v-for="(slide, i) in slides"
-          :key="i"
-          class="carousel-slide"
-          :class="{ active: currentSlide === i }"
-        >
-          <div class="carousel-slide-bg" :style="{ background: slide.bg }"></div>
-          <div class="carousel-slide-pattern"></div>
-          <div class="carousel-sheen"></div>
-          <div class="carousel-content">
-            <span class="carousel-badge">{{ slide.badge }}</span>
-            <h3 class="carousel-title">{{ slide.title }}</h3>
-            <p class="carousel-subtitle">{{ slide.subtitle }}</p>
-          </div>
-        </div>
-        <div class="carousel-controls">
-          <div class="carousel-dots">
-            <button
-              v-for="(_, i) in slides"
-              :key="i"
-              class="carousel-dot"
-              :class="{ active: currentSlide === i }"
-              @click="goToSlide(i)"
-              :aria-label="'切换到第 ' + (i+1) + ' 张：' + slides[i].title"
-              :aria-current="currentSlide === i ? 'true' : undefined"
-            ></button>
-          </div>
-          <div class="carousel-progress">
-            <div class="carousel-progress-bar" :style="{width: progressWidth + '%'}"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <!-- Vision Section -->
     <section class="vision-section" ref="visionSection">
       <div class="section-inner vision-layout">
@@ -200,24 +151,16 @@
 
 <script setup>
 import { withBase } from 'vitepress'
-import { ref, watch, onMounted, onUnmounted } from 'vue'
-import slidesData from '../../data/home-slides.json'
+import { ref, onMounted, onUnmounted } from 'vue'
 import newsData from '../../data/home-news.json'
 
 const visionSection = ref(null)
 const newsSection = ref(null)
 const linksSection = ref(null)
-const carouselSection = ref(null)
 
 // 入场动画的「上膛」开关。只有 JS 跑起来才会置为 true 并隐藏待入场元素，
 // 这样脚本加载失败时页面只是少了动画，不会变成一片空白。
 const revealArmed = ref(false)
-
-// 轮播暂停条件：指针悬停/键盘聚焦、或整块滚出视口。
-// 两者都只是为了别在没人看的时候空转，不影响任何视觉状态。
-const hovered = ref(false)
-const carouselVisible = ref(true)
-let carouselObserver = null
 
 const stats = [
   { value: '8', label: '年历程' },
@@ -243,82 +186,6 @@ const latestNews = newsData.news.map(item => ({
   ...item,
   link: withBase(item.link)
 }))
-
-const slides = slidesData.slides
-
-const currentSlide = ref(0)
-const progressWidth = ref(0)
-let timer = null
-let progressFrame = null
-let progressStart = 0
-const SLIDE_DURATION = 5000
-
-// 系统关掉动效时不做自动轮播：闪烁的内容对这类用户是干扰
-let reducedMotion = false
-
-// 悬停/聚焦（想看清当前这张）或整块滚出视口时暂停自动切换
-function canAutoPlay() {
-  return !reducedMotion && !hovered.value && carouselVisible.value
-}
-
-function stopProgress() {
-  if (progressFrame) cancelAnimationFrame(progressFrame)
-  progressFrame = null
-}
-
-// 用 rAF 而不是 setInterval：原先 50ms 一跳、每跳配 0.05s 过渡，
-// 两者不同步时会看到进度条一顿一顿地走
-function startProgress() {
-  stopProgress()
-  progressStart = performance.now()
-  const step = (now) => {
-    const t = Math.min(1, (now - progressStart) / SLIDE_DURATION)
-    progressWidth.value = t * 100
-    progressFrame = t < 1 ? requestAnimationFrame(step) : null
-  }
-  progressFrame = requestAnimationFrame(step)
-}
-
-function nextSlide() {
-  currentSlide.value = (currentSlide.value + 1) % slides.length
-  startProgress()
-}
-
-function startAutoPlay() {
-  clearInterval(timer)
-  timer = null
-  if (!canAutoPlay()) return
-  timer = setInterval(() => {
-    if (!canAutoPlay()) return
-    nextSlide()
-  }, SLIDE_DURATION)
-  startProgress()
-}
-
-function stopAutoPlay() {
-  clearInterval(timer)
-  timer = null
-  stopProgress()
-}
-
-function goToSlide(i) {
-  currentSlide.value = i
-  // 手动切换后重新开始计时，否则可能刚点完就立刻跳到下一张
-  startAutoPlay()
-}
-
-function onCarouselKeydown(e) {
-  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
-  e.preventDefault()
-  const delta = e.key === 'ArrowRight' ? 1 : -1
-  goToSlide((currentSlide.value + delta + slides.length) % slides.length)
-}
-
-// 暂停条件变化时同步定时器；恢复播放会重置这一张的计时
-watch([hovered, carouselVisible], () => {
-  if (canAutoPlay()) startAutoPlay()
-  else stopAutoPlay()
-})
 
 // ---------- 背景照片视差 ----------
 // 原 Hero 的 Canvas 星空粒子已由 2026 团建合影替代（见模板 .hero-photo）。
@@ -391,7 +258,6 @@ function runCountUp() {
 
 function initScrollReveal() {
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  reducedMotion = reduced
   if (reduced) return // 不做入场动画，内容保持直接可见
 
   // 先「上膛」再开始观察，此时首帧尚未绘制，不会有内容闪现再消失
@@ -417,29 +283,14 @@ function initScrollReveal() {
   sections.forEach(el => { if (el) revealObserver.observe(el) })
 }
 
-// 轮播滚出视口就停掉，别在后台继续 5 秒切一张
-function initCarouselVisibility() {
-  if (!carouselSection.value) return
-  carouselObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      carouselVisible.value = entry.isIntersecting
-    })
-  })
-  carouselObserver.observe(carouselSection.value)
-}
-
 onMounted(() => {
   initParallax()
   initScrollReveal()
-  initCarouselVisibility()
-  startAutoPlay()
 })
 
 onUnmounted(() => {
-  stopAutoPlay()
   if (countFrame) cancelAnimationFrame(countFrame)
   if (revealObserver) revealObserver.disconnect()
-  if (carouselObserver) carouselObserver.disconnect()
   if (disposeParallax) disposeParallax()
 })
 </script>
@@ -453,7 +304,9 @@ onUnmounted(() => {
 /* ========== Hero ========== */
 .hero-section {
   position: relative;
-  min-height: 78vh;
+  /* 之前压到 78vh 并收紧内边距，是为了不让下方轮播卡片盖住按钮；
+     轮播移除后可以放开，让合影占据更完整的首屏 */
+  min-height: 88vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -606,7 +459,7 @@ onUnmounted(() => {
   position: relative;
   z-index: 5;
   text-align: center;
-  padding: 1rem 2rem 3.5rem;
+  padding: 1rem 2rem 2rem;
 }
 
 .hero-overline {
@@ -688,8 +541,8 @@ onUnmounted(() => {
   color: rgba(255, 255, 255, 0.78);
   font-weight: 400;
   letter-spacing: 0.15em;
-  /* 底下就是按钮，留太多会让按钮被轮播卡片压住 */
-  margin: 0 0 1.75rem;
+  /* 底下已无轮播卡片，间距可以放开一些 */
+  margin: 0 0 2.25rem;
   text-shadow: 0 1px 8px rgba(10, 17, 32, 0.8);
   opacity: 0;
   animation: fadeSlideUp 0.8s ease 1.1s forwards;
@@ -722,11 +575,16 @@ onUnmounted(() => {
 }
 
 .hero-btn.primary {
-  background: var(--bu-gold);
+  /* 半透明金色：既能看清按钮位置，又不会把人挡实。
+     底色仍要够重，否则深蓝文字压在照片上会糊。 */
+  background: rgba(201, 169, 110, 0.55);
   color: var(--bu-navy-dark);
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  /* 兜一层薄模糊，让按钮底下的照片细节退到后面去，文字更稳 */
+  backdrop-filter: blur(5px);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
 }
 
 /* 悬停时一道高光扫过，比单纯变色更有质感 */
@@ -749,10 +607,13 @@ onUnmounted(() => {
   transform: translateX(110%);
 }
 
+/* 悬停时提高不透明度而不是换成实色，避免视觉上突然「变实」 */
 .hero-btn.primary:hover {
-  background: #d4b87a;
+  background: rgba(212, 184, 122, 0.85);
   transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(201,169,110,0.25);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.4),
+    0 8px 30px rgba(201, 169, 110, 0.25);
 }
 
 .hero-btn.primary svg {
@@ -785,188 +646,6 @@ onUnmounted(() => {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ========== Carousel ========== */
-.carousel-section {
-  padding: 0 2rem;
-  max-width: 1100px;
-  margin: -4rem auto 0;
-  position: relative;
-  z-index: 4;
-}
-
-.carousel {
-  position: relative;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow:
-    0 20px 60px rgba(10,17,32,0.25),
-    0 0 0 1px rgba(201,169,110,0.08);
-  aspect-ratio: 21 / 9;
-}
-
-.carousel-slide {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.carousel-slide.active {
-  opacity: 1;
-}
-
-/* 缓慢推近的 Ken Burns 效果，让静止的渐变背景也有呼吸 */
-.carousel-slide-bg,
-.carousel-slide-pattern {
-  position: absolute;
-  inset: 0;
-  transform: scale(1);
-  transition: transform 8s cubic-bezier(0.25, 0.1, 0.25, 1);
-}
-
-.carousel-slide.active .carousel-slide-bg,
-.carousel-slide.active .carousel-slide-pattern {
-  transform: scale(1.12);
-}
-
-.carousel-slide-pattern {
-  background-image:
-    radial-gradient(circle at 20% 80%, rgba(201,169,110,0.08) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(201,169,110,0.05) 0%, transparent 40%);
-}
-
-/* 每次切到这一张时扫过一道金光 */
-.carousel-sheen {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    105deg,
-    transparent 35%,
-    rgba(201, 169, 110, 0.16) 47%,
-    rgba(255, 255, 255, 0.07) 52%,
-    transparent 66%
-  );
-  transform: translateX(-120%);
-  pointer-events: none;
-}
-
-.carousel-slide.active .carousel-sheen {
-  animation: sheenSweep 1.6s cubic-bezier(0.4, 0, 0.2, 1) 0.2s;
-}
-
-@keyframes sheenSweep {
-  from { transform: translateX(-120%); }
-  to { transform: translateX(120%); }
-}
-
-.carousel-content {
-  position: relative;
-  z-index: 1;
-  text-align: center;
-  padding: 2rem;
-}
-
-.carousel-badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border: 1px solid rgba(201,169,110,0.4);
-  border-radius: 2px;
-  color: var(--bu-gold);
-  font-size: 0.7rem;
-  letter-spacing: 0.2em;
-  margin-bottom: 1rem;
-  font-weight: 500;
-}
-
-.carousel-title {
-  font-family: 'Noto Serif SC', 'Georgia', serif;
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: #fff;
-  margin: 0 0 0.5rem;
-  letter-spacing: 0.08em;
-}
-
-.carousel-subtitle {
-  font-size: 1rem;
-  color: rgba(255,255,255,0.6);
-  margin: 0;
-  letter-spacing: 0.1em;
-}
-
-/* 徽标 → 标题 → 副标题依次浮起。
-   用 backwards 填充而非 forwards：动画结束后不残留 transform，
-   元素回到自身样式，不会把别处定义的位移锁死。 */
-.carousel-slide.active .carousel-badge,
-.carousel-slide.active .carousel-title,
-.carousel-slide.active .carousel-subtitle {
-  animation: carouselIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) backwards;
-}
-
-.carousel-slide.active .carousel-badge { animation-delay: 0.2s; }
-.carousel-slide.active .carousel-title { animation-delay: 0.32s; }
-.carousel-slide.active .carousel-subtitle { animation-delay: 0.44s; }
-
-@keyframes carouselIn {
-  from {
-    opacity: 0;
-    transform: translateY(18px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.carousel-controls {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 3;
-}
-
-.carousel-dots {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: center;
-  padding-bottom: 1rem;
-}
-
-.carousel-dot {
-  width: 24px;
-  height: 3px;
-  border: none;
-  border-radius: 2px;
-  background: rgba(255,255,255,0.2);
-  cursor: pointer;
-  transition:
-    background-color 0.4s ease,
-    width 0.4s ease;
-  padding: 0;
-}
-
-.carousel-dot.active {
-  background: var(--bu-gold);
-  width: 36px;
-}
-
-.carousel-dot:hover {
-  background: rgba(201,169,110,0.5);
-}
-
-.carousel-progress {
-  height: 2px;
-  background: rgba(255,255,255,0.08);
-}
-
-.carousel-progress-bar {
-  height: 100%;
-  background: linear-gradient(90deg, var(--bu-gold), var(--bu-gold-light));
-}
 
 /* ========== Shared Section Styles ========== */
 .section-inner {
@@ -1395,23 +1074,6 @@ onUnmounted(() => {
     animation: none;
   }
 
-  .carousel-slide-bg,
-  .carousel-slide-pattern,
-  .carousel-slide.active .carousel-slide-bg,
-  .carousel-slide.active .carousel-slide-pattern {
-    transform: none;
-    transition: none;
-  }
-
-  /* 扫光保持停在屏外的默认位置，复位 transform 反而会让它停在画面正中 */
-  .carousel-sheen,
-  .carousel-slide.active .carousel-sheen,
-  .carousel-slide.active .carousel-badge,
-  .carousel-slide.active .carousel-title,
-  .carousel-slide.active .carousel-subtitle {
-    animation: none;
-  }
-
   .bu-home.reveal-armed .reveal-item {
     opacity: 1;
     animation: none;
@@ -1436,7 +1098,7 @@ onUnmounted(() => {
   }
 
   .hero-section {
-    min-height: 82vh;
+    min-height: 86vh;
   }
 
   /* 3rem 的标题在 390px 屏上实测宽约 325px，而内容区仅 326px——
@@ -1463,23 +1125,6 @@ onUnmounted(() => {
 
   .hero-subtitle {
     font-size: 0.8rem;
-  }
-
-  .carousel-section {
-    margin-top: -3rem;
-    padding: 0 1rem;
-  }
-
-  .carousel {
-    aspect-ratio: 16 / 9;
-  }
-
-  .carousel-title {
-    font-size: 1.4rem;
-  }
-
-  .carousel-subtitle {
-    font-size: 0.85rem;
   }
 
   .section-inner {

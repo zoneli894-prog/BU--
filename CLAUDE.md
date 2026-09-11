@@ -36,7 +36,7 @@ Brother Union (BU) 是一个非商业性质团体的官方网站，使用 VitePr
     ├── data/                          # 结构化内容（可在 CMS 中编辑）
     │   ├── timeline.json              # 时间轴 8 个节点（2018-2026）
     │   ├── orgchart.json              # 组织架构：主席团→秘书处→6 部门→顾问
-    │   ├── home-slides.json           # 首页轮播 5 张幻灯片
+    │   ├── home-slides.json           # 轮播幻灯片 5 张（⚠️ 首页已移除轮播，当前数据未被渲染）
     │   ├── home-news.json             # 首页最新动态 3 条
     │   ├── member-grid.json           # 人物列表分组与卡片信息
     │   ├── articles.json              # 成员文章清单（列表页数据源）
@@ -59,7 +59,7 @@ Brother Union (BU) 是一个非商业性质团体的官方网站，使用 VitePr
         └── theme/
             ├── index.ts               # 自定义主题入口，注册 7 个全局组件
             ├── custom.css             # 全局样式：品牌色、时间轴、卡片、表格、响应式
-            ├── Home.vue               # 首页：Hero + 轮播 + 愿景 + 动态 + 快速链接
+            ├── Home.vue               # 首页：合影 Hero + 愿景 + 动态 + 快速链接
             ├── Timeline.vue           # 时间轴：读 timeline.json + 滚动淡入
             ├── OrgChart.vue           # 组织架构图：读 orgchart.json
             ├── MemberGrid.vue         # 成员卡片网格：读 member-grid.json
@@ -78,7 +78,7 @@ Brother Union (BU) 是一个非商业性质团体的官方网站，使用 VitePr
 
 ### Vue 组件
 
-- **Home.vue** — 首页：Canvas 粒子 Hero（带鼠标视差、`prefers-reduced-motion` 降级）+ 自动轮播（5 张、5 秒、金色圆点 + 进度条）+ 愿景（数字递增）+ 3 条最新动态（读 `home-news.json`）+ 6 个快速链接
+- **Home.vue** — 首页：2026 团建合影背景板（两层结构：外层自动推近 + 内层指针视差）+ 愿景（数字递增）+ 3 条最新动态（读 `home-news.json`）+ 6 个快速链接
 - **Timeline.vue** — 垂直时间轴，IntersectionObserver 控制淡入
 - **OrgChart.vue** — 树状组织图：主席团→秘书处→6 部门 + 顾问委员会
 - **MemberGrid.vue** — 成员卡片网格，`<a>` 跳转独立详情页；数据来自 `member-grid.json`
@@ -101,7 +101,8 @@ Brother Union (BU) 是一个非商业性质团体的官方网站，使用 VitePr
 |---|---|---|
 | 时间轴节点 | `docs/data/timeline.json` | 时间轴 |
 | 组织架构 | `docs/data/orgchart.json` | 组织架构 |
-| 首页轮播 / 最新动态 | `docs/data/home-slides.json` / `home-news.json` | 首页内容 |
+| 首页最新动态 | `docs/data/home-news.json` | 首页内容 |
+| 首页轮播幻灯片 | `docs/data/home-slides.json` | 首页内容（⚠️ 当前首页不渲染，见下） |
 | **人物列表卡片** | `docs/data/member-grid.json` | 人物列表 |
 | **成员详情正文** | `docs/members/*.md` | 人物详情 |
 | **文章清单（列表页）** | `docs/data/articles.json` | 文章清单 |
@@ -112,6 +113,8 @@ Brother Union (BU) 是一个非商业性质团体的官方网站，使用 VitePr
 | Hero 标题、愿景文案、统计数字、快速链接 | `Home.vue`（组件内） | ❌ 不在 CMS 内 |
 
 **新增成员或文章时必须同时补两处**：详情页 `.md` + 对应清单 JSON，否则列表页不会显示。CMS 的 `config.yml` 字段名必须与页面实际读取的字段一致，否则编辑后前台不显示（历史上 `excerpt`/`summary`、`term`/`quote` 就踩过这个坑）。
+
+⚠️ `home-slides.json` 与 CMS 的「首页轮播幻灯片」目前是**孤立数据**：2026-09 按需求移除了首页轮播区块，该文件没有组件引用。保留它是为了随时可以复用（例如改造成「近期活动」卡片区），编辑它不会影响任何页面。
 
 ## 常用命令
 
@@ -139,8 +142,8 @@ Windows PowerShell 若提示 `npm.ps1 cannot be loaded`，用 `npm.cmd run build
 - [x] VitePress 项目初始化与依赖安装
 - [x] 站点配置（导航、页脚、中文化、base 路径、本地搜索）
 - [x] 全局主题样式（品牌色系、字体、响应式布局）
-- [x] 首页（Canvas 粒子 Hero + 自动轮播 + 愿景 + 最新动态 + 快速指引）
-- [x] 历史沿革页（垂直时间轴 + 滚动淡入）
+- [x] 首页（2026 团建合影背景板 + 毛玻璃文字层 + 愿景 + 最新动态 + 快速指引）
+- [x] 历史沿革页（垂直时间轴 + 逐节点错开淡入）
 - [x] 组织架构页（可视化树状图 + 职责说明）
 - [x] 人物介绍页（11 位真实成员，卡片网格 + 独立详情页）
 - [x] 新闻页（列表页 + 4 篇详情文章）
@@ -151,16 +154,18 @@ Windows PowerShell 若提示 `npm.ps1 cannot be loaded`，用 `npm.cmd run build
 - [x] GitHub Actions 自动部署至 GitHub Pages
 - [x] Decap CMS 内容后台（8 个集合，字段与页面读取一致）
 - [x] 数据解耦：所有列表组件改为读 JSON，不再硬编码
+- [x] SEO：`config.mts` 的 `head` 已补 description / Open Graph / theme-color
 - [x] 构建验证通过
 
 ## 待完成 / 待改进
 
 - [ ] 资料库文件真实上传（现在全部为「待上传」，`url` 填 `/files/文件名` 即启用）
 - [ ] 新闻列表改为自动生成（当前手动维护卡片，易漏）
-- [ ] 图片资源：`docs/public/images/` 目录尚未创建（CMS 上传会自动创建），成员头像目前是姓名首字
+- [ ] Hero 合影 773 KB 偏大，建议压到 200–300 KB 后替换同名文件
+- [ ] 成员头像目前是姓名首字，可换成真实头像
 - [ ] 404 页面
-- [ ] SEO：`config.mts` 的 `head` 增加 Open Graph / description 标签
 - [ ] 成员详情页与列表 JSON 的双写问题（可考虑改由 `import.meta.glob` 从 frontmatter 生成列表）
+- [ ] 组织架构图仍是静态渲染，缺入场动画，与首页/时间轴的动效调性不一致
 - [ ] 2048 游戏内嵌 Supabase 排行榜（publishable key 在前端，需确认 RLS 策略）
 - [ ] 徐晨洛页面存在自相矛盾表述（frontmatter 写「保皇部部长」，正文写「前保皇成员」），需本人确认
 
