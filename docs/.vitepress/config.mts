@@ -61,6 +61,13 @@ export default defineConfig({
         target: '_blank',
         rel: 'noopener noreferrer',
       },
+      // 后台独立托管在 Netlify，新标签页打开以保留官网浏览位置
+      {
+        text: '后台管理',
+        link: 'https://curious-brigadeiros-4f1d1a.netlify.app/admin/',
+        target: '_blank',
+        rel: 'noopener noreferrer',
+      },
     ],
     sidebar: {
       '/news/': [
