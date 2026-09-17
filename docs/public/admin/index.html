@@ -9,10 +9,10 @@
       :root {
         color-scheme: light;
         font-family:
-          Inter, "PingFang SC", "Microsoft YaHei", system-ui, -apple-system,
-          BlinkMacSystemFont, "Segoe UI", sans-serif;
+          system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+          "Microsoft YaHei", sans-serif;
         color: #1a2744;
-        background: #f8f6f0;
+        background: #f7f4ec;
       }
 
       * {
@@ -30,9 +30,7 @@
         min-height: 100vh;
         place-items: center;
         padding: 24px;
-        background:
-          radial-gradient(circle at top right, rgb(201 169 110 / 22%), transparent 36%),
-          linear-gradient(145deg, #f8f6f0 0%, #eef1f6 100%);
+        background: #f7f4ec;
       }
 
       .login-page[hidden] {
@@ -40,12 +38,12 @@
       }
 
       .login-card {
-        width: min(100%, 440px);
+        width: min(100%, 520px);
         padding: 40px;
-        border: 1px solid rgb(26 39 68 / 10%);
-        border-radius: 20px;
-        background: rgb(255 255 255 / 94%);
-        box-shadow: 0 24px 70px rgb(26 39 68 / 14%);
+        border: 1px solid #e3ddd0;
+        border-radius: 18px;
+        background: #fff;
+        box-shadow: 0 16px 40px rgb(26 39 68 / 9%);
         text-align: center;
       }
 
@@ -70,9 +68,37 @@
       }
 
       .description {
-        margin: 14px 0 28px;
+        margin: 14px 0 24px;
         color: #5b6475;
         line-height: 1.7;
+      }
+
+      .login-steps {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin: 12px 0 0;
+        padding: 24px 0 0;
+        border-top: 1px solid #ece7dc;
+        list-style: none;
+      }
+
+      .login-step {
+        color: #5b6475;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .step-number {
+        display: grid;
+        width: 28px;
+        height: 28px;
+        margin: 0 auto 8px;
+        place-items: center;
+        border: 1px solid #c9a96e;
+        border-radius: 50%;
+        color: #725b31;
+        font-weight: 700;
       }
 
       .login-button {
@@ -100,29 +126,99 @@
         outline-offset: 3px;
       }
 
-      .help,
+      .login-button:disabled {
+        background: #9096a2;
+        cursor: not-allowed;
+        transform: none;
+      }
+
       .status {
         color: #737b8a;
         font-size: 14px;
         line-height: 1.6;
-      }
-
-      .help {
-        margin: 20px 0 0;
-      }
-
-      .status {
         min-height: 22px;
         margin: 14px 0 0;
       }
 
-      @media (max-width: 520px) {
+      .troubleshooting {
+        margin-top: 4px;
+        border-top: 1px solid #ece7dc;
+        color: #5b6475;
+        font-size: 14px;
+        line-height: 1.6;
+        text-align: left;
+      }
+
+      .troubleshooting summary {
+        padding: 16px 0 8px;
+        color: #1a2744;
+        cursor: pointer;
+        font-weight: 700;
+      }
+
+      .troubleshooting summary:focus-visible,
+      .home-link:focus-visible {
+        border-radius: 4px;
+        outline: 3px solid rgb(201 169 110 / 55%);
+        outline-offset: 3px;
+      }
+
+      .troubleshooting ul {
+        margin: 4px 0 12px;
+        padding-left: 20px;
+      }
+
+      .troubleshooting li + li {
+        margin-top: 6px;
+      }
+
+      .home-link {
+        display: inline-block;
+        margin-top: 16px;
+        color: #725b31;
+        font-size: 14px;
+        font-weight: 700;
+        text-underline-offset: 3px;
+      }
+
+      .home-link:hover {
+        color: #1a2744;
+      }
+
+      @media (max-width: 640px) {
         .login-page {
           padding: 16px;
         }
 
         .login-card {
-          padding: 32px 24px;
+          padding: 32px 20px;
+        }
+
+        .login-steps {
+          grid-template-columns: 1fr;
+          gap: 10px;
+          text-align: left;
+        }
+
+        .login-step {
+          display: grid;
+          grid-template-columns: 28px minmax(0, 1fr);
+          align-items: center;
+          gap: 10px;
+        }
+
+        .step-number {
+          margin: 0;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .login-button {
+          transition: none;
+        }
+
+        .login-button:hover {
+          transform: none;
         }
       }
     </style>
@@ -133,15 +229,41 @@
         <div class="brand-mark" aria-hidden="true">BU</div>
         <h1 id="login-title">BU 内容管理后台</h1>
         <p class="description">
-          成员请使用受邀的个人 QQ 邮箱和密码登录。无需注册 GitHub，也不要求使用 Google 邮箱。
+          成员请使用受邀邮箱登录。无需注册 GitHub，也不要求使用 Google 邮箱。
         </p>
         <button id="login-button" class="login-button" type="button">
           登录后台
         </button>
         <p id="login-status" class="status" aria-live="polite"></p>
-        <p class="help">
-          首次使用请打开邀请邮件设置密码；未收到邮件请检查垃圾箱。忘记密码时，可在登录窗口中选择“忘记密码”。
-        </p>
+        <ol class="login-steps" aria-label="登录流程">
+          <li class="login-step">
+            <span class="step-number" aria-hidden="true">1</span>
+            <span>使用受邀的 QQ 邮箱</span>
+          </li>
+          <li class="login-step">
+            <span class="step-number" aria-hidden="true">2</span>
+            <span>首次登录设置密码，之后直接输入密码</span>
+          </li>
+          <li class="login-step">
+            <span class="step-number" aria-hidden="true">3</span>
+            <span>登录成功后进入内容管理系统</span>
+          </li>
+        </ol>
+        <details class="troubleshooting">
+          <summary>登录遇到问题？</summary>
+          <ul>
+            <li>没收到邀请邮件：请检查垃圾邮件，或联系网站管理员重新邀请。</li>
+            <li>忘记密码：请在登录窗口使用密码重置入口。</li>
+            <li>提示账号不存在：请确认输入的是受邀邮箱。</li>
+            <li>邮件链接失效：请联系网站管理员重新发送。</li>
+            <li>
+              登录成功但后台未加载：请刷新页面后再试，仍有问题请联系网站管理员。
+            </li>
+          </ul>
+        </details>
+        <a class="home-link" href="https://zoneli894-prog.github.io/BU--/">
+          返回 BU 官网
+        </a>
       </section>
     </main>
 
@@ -165,15 +287,64 @@
         );
         let cmsLoading = false;
 
+        function setButtonLoading(loading, label = "登录后台") {
+          loginButton.disabled = loading;
+          loginButton.textContent = loading ? "正在加载…" : label;
+        }
+
+        function setStatus(message) {
+          loginStatus.textContent = message;
+        }
+
         function loadCms() {
           if (cmsLoading) return;
           cmsLoading = true;
+          setButtonLoading(true);
+          setStatus("正在进入内容管理系统……");
           loginPanel.hidden = true;
 
           const script = document.createElement("script");
           script.src = "https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js";
           script.async = true;
+          script.onerror = () => {
+            cmsLoading = false;
+            loginPanel.hidden = false;
+            setButtonLoading(false, "重新加载后台");
+            setStatus(
+              "后台加载失败，请刷新页面后重试；仍失败时请联系网站管理员。",
+            );
+          };
           document.body.appendChild(script);
+        }
+
+        function openIdentity(mode) {
+          if (!identity) {
+            setButtonLoading(false);
+            setStatus("登录服务暂时无法加载，请刷新页面后重试。");
+            return;
+          }
+
+          setButtonLoading(true);
+          setStatus("正在打开登录窗口……");
+          try {
+            identity.open(mode);
+          } catch {
+            setButtonLoading(false);
+            setStatus("登录窗口打开失败，请刷新页面后重试。");
+          }
+        }
+
+        loginButton.addEventListener("click", () => {
+          if (identity?.currentUser()) {
+            loadCms();
+          } else {
+            openIdentity("login");
+          }
+        });
+
+        if (!identity) {
+          setStatus("登录服务暂时无法加载，请刷新页面后重试。");
+          return;
         }
 
         identity.init({
@@ -181,7 +352,21 @@
             "https://curious-brigadeiros-4f1d1a.netlify.app/.netlify/identity",
         });
 
-        loginButton.addEventListener("click", () => identity.open("login"));
+        identity.on("open", () => {
+          setStatus("请在登录窗口中完成验证。");
+        });
+
+        identity.on("close", () => {
+          if (!cmsLoading) {
+            setButtonLoading(false);
+            setStatus("");
+          }
+        });
+
+        identity.on("error", () => {
+          setButtonLoading(false);
+          setStatus("登录未完成，请检查邮箱和密码后重试。");
+        });
 
         identity.on("login", () => {
           window.history.replaceState(
@@ -196,8 +381,8 @@
         identity.on("logout", () => window.location.reload());
 
         if (hasAuthCallback) {
-          loginStatus.textContent = "正在验证邀请或账号信息，请稍候……";
-          window.setTimeout(() => identity.open(), 300);
+          setStatus("正在验证邀请或账号信息，请稍候……");
+          window.setTimeout(() => openIdentity(), 300);
         } else if (identity.currentUser()) {
           loadCms();
         }
