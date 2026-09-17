@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>BU 内容管理后台</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family:
+          Inter, "PingFang SC", "Microsoft YaHei", system-ui, -apple-system,
+          BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #1a2744;
+        background: #f8f6f0;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-width: 320px;
+        min-height: 100vh;
+        margin: 0;
+      }
+
+      .login-page {
+        display: grid;
+        min-height: 100vh;
+        place-items: center;
+        padding: 24px;
+        background:
+          radial-gradient(circle at top right, rgb(201 169 110 / 22%), transparent 36%),
+          linear-gradient(145deg, #f8f6f0 0%, #eef1f6 100%);
+      }
+
+      .login-page[hidden] {
+        display: none;
+      }
+
+      .login-card {
+        width: min(100%, 440px);
+        padding: 40px;
+        border: 1px solid rgb(26 39 68 / 10%);
+        border-radius: 20px;
+        background: rgb(255 255 255 / 94%);
+        box-shadow: 0 24px 70px rgb(26 39 68 / 14%);
+        text-align: center;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 20px;
+        place-items: center;
+        border-radius: 18px;
+        background: #1a2744;
+        color: #c9a96e;
+        font-size: 24px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(24px, 5vw, 32px);
+        line-height: 1.25;
+      }
+
+      .description {
+        margin: 14px 0 28px;
+        color: #5b6475;
+        line-height: 1.7;
+      }
+
+      .login-button {
+        width: 100%;
+        min-height: 48px;
+        border: 0;
+        border-radius: 12px;
+        background: #1a2744;
+        color: #fff;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 700;
+        transition:
+          transform 160ms ease,
+          background 160ms ease;
+      }
+
+      .login-button:hover {
+        background: #24365e;
+        transform: translateY(-1px);
+      }
+
+      .login-button:focus-visible {
+        outline: 3px solid rgb(201 169 110 / 55%);
+        outline-offset: 3px;
+      }
+
+      .help,
+      .status {
+        color: #737b8a;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .help {
+        margin: 20px 0 0;
+      }
+
+      .status {
+        min-height: 22px;
+        margin: 14px 0 0;
+      }
+
+      @media (max-width: 520px) {
+        .login-page {
+          padding: 16px;
+        }
+
+        .login-card {
+          padding: 32px 24px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main id="login-panel" class="login-page">
+      <section class="login-card" aria-labelledby="login-title">
+        <div class="brand-mark" aria-hidden="true">BU</div>
+        <h1 id="login-title">BU 内容管理后台</h1>
+        <p class="description">
+          成员请使用受邀的个人 QQ 邮箱和密码登录。无需注册 GitHub，也不要求使用 Google 邮箱。
+        </p>
+        <button id="login-button" class="login-button" type="button">
+          登录后台
+        </button>
+        <p id="login-status" class="status" aria-live="polite"></p>
+        <p class="help">
+          首次使用请打开邀请邮件设置密码；未收到邮件请检查垃圾箱。忘记密码时，可在登录窗口中选择“忘记密码”。
+        </p>
+      </section>
+    </main>
+
+    <div id="nc-root"></div>
+
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <script>
+      (() => {
+        const identity = window.netlifyIdentity;
+        const loginPanel = document.getElementById("login-panel");
+        const loginButton = document.getElementById("login-button");
+        const loginStatus = document.getElementById("login-status");
+        const authCallbackTokens = [
+          "invite_token",
+          "recovery_token",
+          "confirmation_token",
+          "email_change_token",
+        ];
+        const hasAuthCallback = authCallbackTokens.some((token) =>
+          window.location.hash.includes(token),
+        );
+        let cmsLoading = false;
+
+        function loadCms() {
+          if (cmsLoading) return;
+          cmsLoading = true;
+          loginPanel.hidden = true;
+
+          const script = document.createElement("script");
+          script.src = "https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js";
+          script.async = true;
+          document.body.appendChild(script);
+        }
+
+        identity.init({
+          APIUrl:
+            "https://curious-brigadeiros-4f1d1a.netlify.app/.netlify/identity",
+        });
+
+        loginButton.addEventListener("click", () => identity.open("login"));
+
+        identity.on("login", () => {
+          window.history.replaceState(
+            null,
+            "",
+            window.location.pathname + window.location.search,
+          );
+          identity.close();
+          loadCms();
+        });
+
+        identity.on("logout", () => window.location.reload());
+
+        if (hasAuthCallback) {
+          loginStatus.textContent = "正在验证邀请或账号信息，请稍候……";
+          window.setTimeout(() => identity.open(), 300);
+        } else if (identity.currentUser()) {
+          loadCms();
+        }
+      })();
+    </script>
+  </body>
+</html>
